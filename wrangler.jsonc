@@ -1,0 +1,36 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "telly",
+	"compatibility_date": "2026-10-03",
+	"compatibility_flags": ["nodejs_als"],
+	"main": ".svelte-kit/cloudflare/_worker.js",
+	"assets": {
+		"binding": "ASSETS",
+		"directory": ".svelte-kit/cloudflare"
+	},
+	// Only served on telly.app.haddow.me (sign-in sends people back there).
+	"workers_dev": false,
+	"routes": [{ "pattern": "telly.app.haddow.me", "custom_domain": true }],
+	// Keeps request logs and console output (Workers Logs, free tier) for debugging.
+	"observability": {
+		"enabled": true
+	},
+	"vars": {
+		"APP_ORIGIN": "https://telly.app.haddow.me",
+		// Public OAuth client ID; the secret is a Worker secret (GOOGLE_CLIENT_SECRET).
+		"GOOGLE_CLIENT_ID": "856408914710-dgcs4pkdkahr6jchr0pefodiobhjrmv4.apps.googleusercontent.com",
+		// Web push public key (the private key is the VAPID_PRIVATE_KEY secret).
+		"VAPID_PUBLIC_KEY": "BBGHKE-n1wv2ImtlsHJ1Or-0Dz2n_BzjOXNWA8ouuKCnefeV8DI8wOKBDeqazNiK4WeBaLWCS7hEBCJ5DagDvpA"
+	},
+	// Off: branch previews would share the live D1 database.
+	"preview_urls": false,
+	"d1_databases": [
+		{
+			// Created with --jurisdiction eu, so the data stays in the EU.
+			"binding": "DB",
+			"database_name": "telly",
+			"database_id": "29e2bae3-f5c8-4d68-9154-7770933e64ab",
+			"migrations_dir": "drizzle"
+		}
+	]
+}
