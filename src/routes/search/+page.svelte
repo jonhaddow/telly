@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { afterNavigate, goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import Poster from '#lib/components/Poster.svelte';
 	import { titlePath } from '#lib/titles.ts';
@@ -10,6 +10,14 @@
 	// The box keeps what's typed (spaces and all); results follow it.
 	let text = $state(page.url.searchParams.get('q') ?? '');
 	let timer: ReturnType<typeof setTimeout> | undefined;
+
+	// Arriving with other words (the Search tab, Back): show those. Not after the
+	// box's own updates, which would trim a space still being typed.
+	afterNavigate(({ type }) => {
+		if (type !== 'goto') text = page.url.searchParams.get('q') ?? '';
+	});
+	// Leaving before the pause is up: don't pull the next page back to search.
+	$effect(() => () => clearTimeout(timer));
 
 	// Results update as you type, a moment after you stop. The address keeps the
 	// words, so Back from a title returns to the same results.

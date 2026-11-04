@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { imageUrl } from '#lib/titles.ts';
+	import { imageUrl, type ImageWidth } from '#lib/titles.ts';
 
 	let {
 		path,
 		name,
 		width = 'w185'
-	}: { path: string | null; name: string; width?: 'w92' | 'w185' | 'w342' | 'w500' } = $props();
+	}: { path: string | null; name: string; width?: ImageWidth } = $props();
 </script>
 
 <!-- 2:3, like every poster. No image: the name on a plain card (too small in lists). -->

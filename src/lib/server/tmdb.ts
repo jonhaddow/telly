@@ -66,13 +66,11 @@ export function toSummary(kind: Kind, t: RawSummary): TitleSummary {
 
 /** The official trailer if there is one, else any trailer, else a teaser. Newest first. */
 export function pickTrailer(videos: Video[]): string | null {
-	const youtube = videos
-		.filter((v) => v.site === 'YouTube')
-		.sort((a, b) => b.published_at.localeCompare(a.published_at));
-	const rank = (v: Video) =>
-		v.type === 'Trailer' ? (v.official ? 0 : 1) : v.type === 'Teaser' ? 2 : 3;
-	const best = youtube.sort((a, b) => rank(a) - rank(b))[0];
-	return best && rank(best) < 3 ? best.key : null;
+	const rank = (v: Video) => (v.type === 'Trailer' ? (v.official ? 0 : 1) : 2);
+	const best = videos
+		.filter((v) => v.site === 'YouTube' && (v.type === 'Trailer' || v.type === 'Teaser'))
+		.sort((a, b) => rank(a) - rank(b) || b.published_at.localeCompare(a.published_at))[0];
+	return best?.key ?? null;
 }
 
 function certificate(kind: Kind, t: RawTitle): string | null {

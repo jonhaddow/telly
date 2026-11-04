@@ -6,7 +6,7 @@ export const load: PageServerLoad = async ({ url }) => {
 	if (!q) return { q, results: [], failed: false };
 	try {
 		const { tmdb } = await apis();
-		return { q, results: (await tmdb.search(q)).slice(0, 20), failed: false };
+		return { q, results: await tmdb.search(q), failed: false };
 	} catch (e) {
 		console.error(e);
 		return { q, results: [], failed: true };

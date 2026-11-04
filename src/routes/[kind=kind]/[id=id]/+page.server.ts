@@ -12,7 +12,10 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		// Streamed: the page shows straight away and the scores fill in.
 		ratings:
 			title.imdbId && omdbKey
-				? ratingsFor(locals.db, title.imdbId, omdbKey, fetcher).catch(() => null)
+				? ratingsFor(locals.db, title.imdbId, omdbKey, fetcher).catch((e: unknown) => {
+						console.error('Ratings', e);
+						return null;
+					})
 				: Promise.resolve(null)
 	};
 };

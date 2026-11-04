@@ -41,8 +41,11 @@ export type Ratings = {
 /** The page for a film or show. */
 export const titlePath = (t: Pick<TitleSummary, 'kind' | 'id'>) => `/${t.kind}/${t.id}`;
 
-/** TMDB image, at a width it serves (w92, w185, w342, w500, w780). */
-export const imageUrl = (path: string, width: 'w92' | 'w185' | 'w342' | 'w500' | 'w780') =>
+/** Widths TMDB serves images at. */
+export type ImageWidth = 'w92' | 'w185' | 'w342' | 'w500' | 'w780';
+
+/** TMDB image, at one of its widths. */
+export const imageUrl = (path: string, width: ImageWidth) =>
 	`https://image.tmdb.org/t/p/${width}${path}`;
 
 /** "1h 52m", "45m". */

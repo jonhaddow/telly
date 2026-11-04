@@ -41,6 +41,28 @@ describe('toTitle', () => {
 		);
 	});
 
+	it('copes with a title that has nothing but an id', () => {
+		for (const kind of ['movie', 'tv'] as const) {
+			expect(toTitle(kind, { id: 1, runtime: 0 })).toEqual({
+				kind,
+				id: 1,
+				name: 'Untitled',
+				years: null,
+				poster: null,
+				overview: '',
+				tagline: null,
+				backdrop: null,
+				genres: [],
+				runtime: null,
+				certificate: null,
+				seasons: null,
+				episodes: null,
+				imdbId: null,
+				trailer: null
+			});
+		}
+	});
+
 	it('reads the UK certificate and IMDb id for each kind', () => {
 		const film = toTitle('movie', {
 			id: 1,

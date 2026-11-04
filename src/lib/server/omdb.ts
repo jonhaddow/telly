@@ -43,16 +43,8 @@ export async function ratingsFor(
 	fetcher: typeof fetch = fetch,
 	now = new Date()
 ): Promise<Ratings | null> {
-	const [row] = await db.select().from(rating).where(eq(rating.imdbId, imdbId));
-	const kept: Ratings | null = row
-		? {
-				imdb: row.imdb,
-				imdbVotes: row.imdbVotes,
-				rottenTomatoes: row.rottenTomatoes,
-				metacritic: row.metacritic
-			}
-		: null;
-	if (row && now.getTime() - Date.parse(row.fetchedAt) < KEEP_DAYS * 86_400_000) return kept;
+	const [kept] = await db.select().from(rating).where(eq(rating.imdbId, imdbId));
+	if (kept && now.getTime() - Date.parse(kept.fetchedAt) < KEEP_DAYS * 86_400_000) return kept;
 
 	let fresh: Ratings | null = null;
 	try {
@@ -63,7 +55,7 @@ export async function ratingsFor(
 	} catch (e) {
 		console.error('OMDb', e);
 	}
-	if (!fresh) return kept;
+	if (!fresh) return kept ?? null;
 
 	const values = { imdbId, ...fresh, fetchedAt: now.toISOString() };
 	await db.insert(rating).values(values).onConflictDoUpdate({ target: rating.imdbId, set: values });
