@@ -1,7 +1,7 @@
 // Episode tracking, shared by the household: each episode is watched or not.
 // Each show's next episode is worked out here and copied to its watchlist row,
 // so Up next loads without calling TMDB.
-import { and, eq, or } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { episodeWatch, watchlist } from './db/schema.ts';
 import type { DB } from './db/index.ts';
 import type { Tmdb } from './tmdb.ts';
@@ -35,37 +35,44 @@ export function nextAfter(seasons: Season[], watched: EpisodeRef[]): EpisodeRef 
 	return following ? { season: following.number, episode: 1 } : null;
 }
 
-/** Marks episodes watched, or not. */
+/** D1 takes at most 100 bound values a query: 5 a row inserted, 1 an episode deleted. */
+const chunks = <T>(list: T[], size: number) =>
+	Array.from({ length: Math.ceil(list.length / size) }, (_, i) =>
+		list.slice(i * size, (i + 1) * size)
+	);
+
+/** Marks episodes of one season watched, or not. */
 export async function setWatched(
 	db: DB,
 	showId: number,
-	episodes: EpisodeRef[],
+	season: number,
+	episodes: number[],
 	watched: boolean,
 	userId: number,
 	now = new Date()
 ) {
-	if (!episodes.length) return;
-	if (watched) {
-		const at = now.toISOString();
-		await db
-			.insert(episodeWatch)
-			.values(episodes.map((e) => ({ showId, ...e, watchedBy: userId, watchedAt: at })))
-			.onConflictDoNothing();
-	} else {
-		// A season at most: well under D1's 100 bound values.
-		await db
-			.delete(episodeWatch)
-			.where(
-				and(
-					eq(episodeWatch.showId, showId),
-					or(
-						...episodes.map((e) =>
-							and(eq(episodeWatch.season, e.season), eq(episodeWatch.episode, e.episode))
+	const at = now.toISOString();
+	const queries = watched
+		? chunks(episodes, 19).map((part) =>
+				db
+					.insert(episodeWatch)
+					.values(
+						part.map((episode) => ({ showId, season, episode, watchedBy: userId, watchedAt: at }))
+					)
+					.onConflictDoNothing()
+			)
+		: chunks(episodes, 90).map((part) =>
+				db
+					.delete(episodeWatch)
+					.where(
+						and(
+							eq(episodeWatch.showId, showId),
+							eq(episodeWatch.season, season),
+							inArray(episodeWatch.episode, part)
 						)
 					)
-				)
 			);
-	}
+	if (queries.length) await db.batch([queries[0], ...queries.slice(1)]);
 }
 
 /**

@@ -63,6 +63,22 @@ describe('toTitle', () => {
 		}
 	});
 
+	it('lists seasons in order, without specials or empty ones', () => {
+		const show = toTitle('tv', {
+			id: 1,
+			seasons: [
+				{ season_number: 2, name: '', episode_count: 8, air_date: null },
+				{ season_number: 0, name: 'Specials', episode_count: 2 },
+				{ season_number: 3, name: 'Series 3', episode_count: 0 },
+				{ season_number: 1, name: 'Series 1', episode_count: 6, air_date: '2020-01-01' }
+			]
+		});
+		expect(show.seasons).toEqual([
+			{ number: 1, name: 'Series 1', episodes: 6, airDate: '2020-01-01' },
+			{ number: 2, name: 'Season 2', episodes: 8, airDate: null }
+		]);
+	});
+
 	it('reads the UK certificate and IMDb id for each kind', () => {
 		const film = toTitle('movie', {
 			id: 1,

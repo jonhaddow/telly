@@ -24,16 +24,14 @@ export const episodeActions = {
 		const { tmdb } = await apis();
 		const show = await tmdb.title('tv', showId);
 		if (!show) return fail(404);
-		let episodes = episode ? [{ season, episode }] : [];
-		if (!episode) {
-			const day = today();
-			const all = (await tmdb.season(showId, season)) ?? [];
-			// Not ones still to come.
-			episodes = all
-				.filter((e) => !watched || (e.airDate && e.airDate <= day))
-				.map((e) => ({ season, episode: e.number }));
-		}
-		await setWatched(locals.db, showId, episodes, watched, locals.user!.id);
+		const day = today();
+		const episodes = episode
+			? [episode]
+			: ((await tmdb.season(showId, season)) ?? [])
+					// Marking a season watched: not the episodes still to come.
+					.filter((e) => !watched || (e.airDate && e.airDate <= day))
+					.map((e) => e.number);
+		await setWatched(locals.db, showId, season, episodes, watched, locals.user!.id);
 		await updateProgress(locals.db, tmdb, show, locals.user!.id, { ticked: watched });
 	}
 };

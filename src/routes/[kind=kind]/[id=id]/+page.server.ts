@@ -1,4 +1,5 @@
 import { error } from '@sveltejs/kit';
+import { today } from '#lib/dates.ts';
 import { apis } from '#lib/server/apis.ts';
 import { episodeActions } from '#lib/server/episode-actions.ts';
 import { updateProgress, watchedEpisodes } from '#lib/server/episodes.ts';
@@ -17,9 +18,22 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		services(locals.db),
 		isShow ? watchedEpisodes(locals.db, title.id) : []
 	]);
-	// A listed show being watched: its next episode may have changed (a new season).
+	// A listed show being watched. Caught up, or waiting for an episode: check
+	// TMDB for a new season or date. Otherwise the kept next episode will do.
+	const kept =
+		row?.nextSeason && row.nextEpisode
+			? {
+					season: row.nextSeason,
+					number: row.nextEpisode,
+					name: row.nextName ?? '',
+					airDate: row.nextAirDate
+				}
+			: null;
+	const waiting = !kept || !kept.airDate || kept.airDate > today();
 	const next =
-		row && watched.length ? await updateProgress(locals.db, tmdb, title, locals.user!.id) : null;
+		row && watched.length && waiting
+			? await updateProgress(locals.db, tmdb, title, locals.user!.id)
+			: kept;
 	return {
 		title,
 		listed: !!row,
