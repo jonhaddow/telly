@@ -1,14 +1,14 @@
 import { fail, type RequestEvent } from '@sveltejs/kit';
 import { apis } from './apis.ts';
 import { addToWatchlist, removeFromWatchlist } from './watchlist.ts';
-import { KINDS, type Kind } from '../titles.ts';
+import { KINDS } from '../titles.ts';
 
 /** The title a form names (kind and id fields). */
 async function target(request: Request) {
 	const form = await request.formData();
-	const kind = String(form.get('kind')) as Kind;
+	const kind = KINDS.find((k) => k === form.get('kind'));
 	const id = Number(form.get('id'));
-	return KINDS.includes(kind) && Number.isInteger(id) && id > 0 ? { kind, id } : null;
+	return kind && Number.isInteger(id) && id > 0 ? { kind, id } : null;
 }
 
 /** Add and remove, for any page that lists titles. */

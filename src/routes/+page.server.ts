@@ -1,10 +1,11 @@
 import { services, watchlistRows } from '#lib/server/watchlist.ts';
 import { watchlistActions } from '#lib/server/watchlist-actions.ts';
+import { KINDS } from '#lib/titles.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	const [rows, ours] = await Promise.all([watchlistRows(locals.db), services(locals.db)]);
-	const kind = url.searchParams.get('kind');
+	const kind = KINDS.find((k) => k === url.searchParams.get('kind')) ?? null;
 	const mine = url.searchParams.get('mine') === '1';
 	const items = rows.map((r) => ({
 		kind: r.kind,
@@ -16,7 +17,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		on: ours.filter((s) => r.watchableOn.includes(s.id))
 	}));
 	return {
-		kind: kind === 'movie' || kind === 'tv' ? kind : null,
+		kind,
 		mine,
 		total: items.length,
 		hasServices: ours.length > 0,

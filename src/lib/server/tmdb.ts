@@ -115,7 +115,7 @@ const toProvider = (p: RawProvider): Provider => ({
 function ranked(list: RawProvider[], priority: (p: RawProvider) => number | undefined) {
 	const seen = new Set<number>();
 	return list
-		.sort((a, b) => (priority(a) ?? 999) - (priority(b) ?? 999))
+		.toSorted((a, b) => (priority(a) ?? 999) - (priority(b) ?? 999))
 		.filter((p) => !seen.has(p.provider_id) && seen.add(p.provider_id))
 		.map(toProvider);
 }
@@ -128,19 +128,18 @@ const merge = (...lists: (RawProvider[] | undefined)[]) =>
 
 /** UK where-to-watch. A service in more than one group shows in the cheapest only. */
 export function toProviders(raw: RawProviders | undefined): Providers {
-	const stream = merge(raw?.flatrate);
-	const free = merge(raw?.free, raw?.ads);
-	const taken = new Set([...stream, ...free].map((p) => p.id));
+	const taken = new Set<number>();
+	const unseen = (list: Provider[]) => list.filter((p) => !taken.has(p.id) && taken.add(p.id));
 	return {
 		link: raw?.link ?? null,
-		stream,
-		free: free.filter((p) => !stream.some((s) => s.id === p.id)),
-		buy: merge(raw?.rent, raw?.buy).filter((p) => !taken.has(p.id))
+		stream: unseen(merge(raw?.flatrate)),
+		free: unseen(merge(raw?.free, raw?.ads)),
+		buy: unseen(merge(raw?.rent, raw?.buy))
 	};
 }
 
 /** Amazon and Apple's add-on channels: the service itself is listed too. */
-const isChannel = (name: string) => / Channel$/.test(name);
+const isChannel = (name: string) => name.endsWith(' Channel');
 
 export function toTitle(kind: Kind, t: RawTitle): Title {
 	return {
@@ -158,7 +157,7 @@ export function toTitle(kind: Kind, t: RawTitle): Title {
 		episodes: kind === 'tv' ? (t.number_of_episodes ?? null) : null,
 		imdbId: (kind === 'movie' ? t.imdb_id : t.external_ids?.imdb_id) || null,
 		trailer: pickTrailer(t.videos?.results ?? []),
-		providers: toProviders(t['watch/providers']?.results.GB)
+		providers: toProviders(t['watch/providers']?.results?.GB)
 	};
 }
 
@@ -193,6 +192,7 @@ export function tmdb(token: string, fetcher: typeof fetch = fetch) {
 		async title(kind: Kind, id: number): Promise<Title | null> {
 			const extra =
 				(kind === 'movie' ? 'videos,release_dates' : 'videos,content_ratings,external_ids') +
+				// Every country's (about 40 KB for a popular show): still cheaper than a second call.
 				',watch/providers';
 			// Trailers in any language, so foreign films still have one.
 			const data = await get<RawTitle>(`/${kind}/${id}`, {
