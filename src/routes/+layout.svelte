@@ -11,17 +11,13 @@
 
 	const path = $derived(page.url.pathname);
 	const tabs = $derived([
-		{
-			href: '/search',
-			label: 'Search',
-			icon: 'search',
-			active: path !== '/settings' && path !== '/notifications'
-		},
+		{ href: '/', label: 'Watchlist', icon: 'watchlist', active: path === '/' },
+		{ href: '/search', label: 'Search', icon: 'search', active: path === '/search' },
 		{
 			href: '/settings',
 			label: 'Settings',
 			icon: 'settings',
-			active: path === '/settings' || path === '/notifications'
+			active: ['/settings', '/services', '/notifications'].includes(path)
 		}
 	]);
 
@@ -74,7 +70,9 @@
 						stroke-linejoin="round"
 						aria-hidden="true"
 					>
-						{#if tab.icon === 'search'}
+						{#if tab.icon === 'watchlist'}
+							<path d="M7 3.5h10a1 1 0 0 1 1 1v16l-6-4-6 4v-16a1 1 0 0 1 1-1Z" />
+						{:else if tab.icon === 'search'}
 							<circle cx="11" cy="11" r="6.5" />
 							<path d="m16 16 4.5 4.5" />
 						{:else}
@@ -99,7 +97,7 @@
 		left: 50%;
 		bottom: calc(12px + env(safe-area-inset-bottom));
 		translate: -50% 0;
-		width: min(calc(100% - 32px), 260px);
+		width: min(calc(100% - 32px), 360px);
 		height: var(--tabs);
 		padding: 6px;
 		border-radius: 999px;
@@ -109,7 +107,7 @@
 		border: 1px solid color-mix(in srgb, var(--ink) 8%, transparent);
 		box-shadow: 0 8px 28px rgb(0 0 0 / 0.12);
 		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
+		grid-template-columns: repeat(3, minmax(0, 1fr));
 	}
 	nav a {
 		display: flex;

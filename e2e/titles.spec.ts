@@ -2,8 +2,7 @@ import { expect, test } from '@playwright/test';
 import { open } from './helpers.ts';
 
 test('search, open a film and see its ratings and trailer', async ({ page }) => {
-	await open(page, '/');
-	await expect(page).toHaveURL(/\/search$/);
+	await open(page, '/search');
 	await page.getByRole('searchbox', { name: 'Search films and shows' }).fill('light');
 	await expect(page).toHaveURL(/q=light/);
 	await expect(page.getByRole('link', { name: /Harbour Lights/ })).toBeVisible();

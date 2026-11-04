@@ -12,6 +12,7 @@
 	<h1>Settings</h1>
 
 	<ul class="list">
+		<li><a href="/services">Your services <span class="muted">›</span></a></li>
 		<li><a href="/notifications">Notifications <span class="muted">›</span></a></li>
 	</ul>
 
@@ -29,7 +30,8 @@
 
 	<p class="muted credit">
 		Film and TV information from <a href="https://www.themoviedb.org">TMDB</a>. This app uses the
-		TMDB API but is not endorsed or certified by TMDB. Ratings from
+		TMDB API but is not endorsed or certified by TMDB. Where to watch from
+		<a href="https://www.justwatch.com">JustWatch</a>. Ratings from
 		<a href="https://www.omdbapi.com">OMDb</a>.
 	</p>
 
