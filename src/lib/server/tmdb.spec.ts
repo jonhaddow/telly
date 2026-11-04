@@ -55,8 +55,7 @@ describe('toTitle', () => {
 				genres: [],
 				runtime: null,
 				certificate: null,
-				seasons: null,
-				episodes: null,
+				seasons: [],
 				imdbId: null,
 				trailer: null,
 				providers: { link: null, stream: [], free: [], buy: [] }
@@ -130,8 +129,8 @@ describe('toProviders', () => {
 });
 
 describe('services', () => {
-	it('lists UK services once each, without add-on channels', async () => {
+	it('lists UK services once each, without add-on channels or shops', async () => {
 		const names = (await tmdb('token', fakeFetch).services()).map((s) => s.name);
-		expect(names).toEqual(['Netflix', 'Amazon Prime Video', 'Apple TV Store', 'BBC iPlayer']);
+		expect(names).toEqual(['Netflix', 'Amazon Prime Video', 'BBC iPlayer']);
 	});
 });

@@ -24,14 +24,30 @@ export type Title = TitleSummary & {
 	runtime: number | null;
 	/** UK certificate: "15", "PG". */
 	certificate: string | null;
-	seasons: number | null;
-	episodes: number | null;
+	/** A show's seasons in order, without specials (season 0); none for a film. */
+	seasons: Season[];
 	imdbId: string | null;
 	/** YouTube video id of the trailer. */
 	trailer: string | null;
 	/** Where to watch it in the UK (JustWatch's data, via TMDB). */
 	providers: Providers;
 };
+
+export type Season = { number: number; name: string; episodes: number; airDate: string | null };
+
+export type Episode = {
+	season: number;
+	number: number;
+	name: string;
+	/** UK date it first aired, YYYY-MM-DD; null if not announced. */
+	airDate: string | null;
+	runtime: number | null;
+	still: string | null;
+	overview: string;
+};
+
+/** "S2 E5". */
+export const episodeCode = (e: { season: number; number: number }) => `S${e.season} E${e.number}`;
 
 /** A streaming service, shop or channel. */
 export type Provider = { id: number; name: string; logo: string | null };

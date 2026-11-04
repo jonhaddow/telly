@@ -1,3 +1,5 @@
+import { today } from '#lib/dates.ts';
+import { episodeActions } from '#lib/server/episode-actions.ts';
 import { services, watchlistRows } from '#lib/server/watchlist.ts';
 import { watchlistActions } from '#lib/server/watchlist-actions.ts';
 import { KINDS } from '#lib/titles.ts';
@@ -16,7 +18,22 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		// Ours that show it, most popular first.
 		on: ours.filter((s) => r.watchableOn.includes(s.id))
 	}));
+	const day = today();
+	// Shows with an episode out that's next to watch, latest watched first.
+	const upNext = rows
+		.filter((r) => r.nextSeason && r.nextEpisode && r.nextAirDate && r.nextAirDate <= day)
+		.sort((a, b) => (b.watchedAt ?? '').localeCompare(a.watchedAt ?? ''))
+		.map((r) => ({
+			id: r.tmdbId,
+			name: r.name,
+			poster: r.poster,
+			still: r.nextStill,
+			season: r.nextSeason!,
+			number: r.nextEpisode!,
+			episodeName: r.nextName ?? ''
+		}));
 	return {
+		upNext,
 		kind,
 		mine,
 		total: items.length,
@@ -25,4 +42,4 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	};
 };
 
-export const actions: Actions = watchlistActions;
+export const actions: Actions = { ...watchlistActions, ...episodeActions };

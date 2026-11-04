@@ -1,6 +1,7 @@
 <script lang="ts">
+	import EpisodeCheck from '#lib/components/EpisodeCheck.svelte';
 	import Poster from '#lib/components/Poster.svelte';
-	import { imageUrl, titlePath } from '#lib/titles.ts';
+	import { episodeCode, imageUrl, titlePath } from '#lib/titles.ts';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -25,6 +26,32 @@
 
 <main class="page">
 	<h1>Watchlist</h1>
+
+	{#if data.upNext.length}
+		<section class="up-next" aria-labelledby="up-next">
+			<h2 id="up-next">Up next</h2>
+			<ul class="list">
+				{#each data.upNext as e (e.id)}
+					<li>
+						<a href="/tv/{e.id}">
+							<span class="thumb">
+								{#if e.still}
+									<img src={imageUrl(e.still, 'w185')} alt="" loading="lazy" />
+								{:else}
+									<Poster path={e.poster} name={e.name} width="w92" />
+								{/if}
+							</span>
+							<span class="text">
+								<strong>{e.name}</strong>
+								<span class="muted">{episodeCode(e)} · {e.episodeName}</span>
+							</span>
+						</a>
+						<EpisodeCheck show={e.id} season={e.season} episode={e.number} watched={false} />
+					</li>
+				{/each}
+			</ul>
+		</section>
+	{/if}
 
 	{#if !data.total}
 		<section class="card empty">
@@ -90,6 +117,58 @@
 </main>
 
 <style>
+	.up-next {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+	.up-next li {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding-right: 12px;
+	}
+	.up-next a {
+		flex: 1;
+		min-width: 0;
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		padding: 10px 0 10px 12px;
+		text-decoration: none;
+	}
+	/* An episode still (16:9), or the show's poster in its place. */
+	.thumb {
+		flex: none;
+		width: 96px;
+		aspect-ratio: 16 / 9;
+		border-radius: 8px;
+		overflow: hidden;
+		background: var(--poster);
+		display: flex;
+		justify-content: center;
+	}
+	.thumb img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+	.thumb :global(.poster) {
+		height: 100%;
+		border-radius: 0;
+	}
+	.up-next .text {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-width: 0;
+	}
+	.up-next .muted {
+		font-size: 13px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
 	.empty {
 		padding: 24px 20px;
 		display: flex;

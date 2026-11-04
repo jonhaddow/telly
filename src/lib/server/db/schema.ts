@@ -79,9 +79,32 @@ export const watchlist = sqliteTable(
 		/** Ids of the services showing it at no extra cost (JSON array). */
 		watchableOn: text('watchable_on', { mode: 'json' }).$type<number[]>().notNull(),
 		addedBy: integer('added_by').references(() => user.id, { onDelete: 'set null' }),
-		addedAt: text('added_at').notNull()
+		addedAt: text('added_at').notNull(),
+		// Shows: the episode after the latest one watched (episodes.ts), copied so
+		// Up next loads without TMDB. Null before any are watched, or when caught up.
+		nextSeason: integer('next_season'),
+		nextEpisode: integer('next_episode'),
+		nextName: text('next_name'),
+		/** UK date, YYYY-MM-DD; null if not announced. */
+		nextAirDate: text('next_air_date'),
+		nextStill: text('next_still'),
+		/** When an episode was last ticked: Up next puts the latest first. */
+		watchedAt: text('watched_at')
 	},
 	(t) => [primaryKey({ columns: [t.kind, t.tmdbId] }), index('watchlist_added_idx').on(t.addedAt)]
 );
 
 export type WatchlistRow = typeof watchlist.$inferSelect;
+
+/** Episodes the household has watched (together, so once each). */
+export const episodeWatch = sqliteTable(
+	'episode_watch',
+	{
+		showId: integer('show_id').notNull(),
+		season: integer('season').notNull(),
+		episode: integer('episode').notNull(),
+		watchedBy: integer('watched_by').references(() => user.id, { onDelete: 'set null' }),
+		watchedAt: text('watched_at').notNull()
+	},
+	(t) => [primaryKey({ columns: [t.showId, t.season, t.episode] })]
+);

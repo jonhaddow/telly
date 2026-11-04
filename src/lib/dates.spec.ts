@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addDays, daysBetween, relativeDay, today } from './dates.ts';
+import { addDays, daysBetween, formatDate, relativeDay, today } from './dates.ts';
 
 describe('dates', () => {
 	it('uses the UK day', () => {
@@ -19,5 +19,12 @@ describe('dates', () => {
 		expect(relativeDay('2026-10-22', '2026-10-19')).toBe('In 3 days');
 		expect(relativeDay('2026-10-16', '2026-10-19')).toBe('3 days ago');
 		expect(relativeDay('2026-11-19', '2026-10-19')).toBe('Thu 19 Nov');
+	});
+});
+
+describe('formatDate', () => {
+	it('leaves the year off this year only', () => {
+		expect(formatDate('2026-10-16', '2026-11-04')).toBe('Fri 16 Oct');
+		expect(formatDate('2023-09-03', '2026-11-04')).toBe('3 Sept 2023');
 	});
 });

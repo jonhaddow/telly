@@ -1,5 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { apis } from '#lib/server/apis.ts';
+import { episodeActions } from '#lib/server/episode-actions.ts';
+import { updateProgress, watchedEpisodes } from '#lib/server/episodes.ts';
 import { ratingsFor } from '#lib/server/omdb.ts';
 import { refreshListed, services } from '#lib/server/watchlist.ts';
 import { watchlistActions } from '#lib/server/watchlist-actions.ts';
@@ -9,11 +11,25 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	const { tmdb, omdbKey, fetcher } = await apis();
 	const title = await tmdb.title(params.kind, params.id);
 	if (!title) error(404, 'Not found');
-	const [listed, ours] = await Promise.all([refreshListed(locals.db, title), services(locals.db)]);
+	const isShow = title.kind === 'tv';
+	const [row, ours, watched] = await Promise.all([
+		refreshListed(locals.db, title),
+		services(locals.db),
+		isShow ? watchedEpisodes(locals.db, title.id) : []
+	]);
+	// A listed show being watched: its next episode may have changed (a new season).
+	const next =
+		row && watched.length ? await updateProgress(locals.db, tmdb, title, locals.user!.id) : null;
 	return {
 		title,
-		listed,
+		listed: !!row,
 		ours: ours.map((s) => s.id),
+		// Watched episodes in each season.
+		watchedBySeason: Object.fromEntries(
+			title.seasons.map((s) => [s.number, watched.filter((w) => w.season === s.number).length])
+		),
+		watchedAny: watched.length > 0,
+		next,
 		// Streamed: the page shows straight away and the scores fill in.
 		ratings:
 			title.imdbId && omdbKey
@@ -25,4 +41,4 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	};
 };
 
-export const actions: Actions = watchlistActions;
+export const actions: Actions = { ...watchlistActions, ...episodeActions };

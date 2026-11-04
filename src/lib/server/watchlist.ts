@@ -36,14 +36,14 @@ export async function removeFromWatchlist(db: DB, kind: Kind, id: number) {
 	await db.delete(watchlist).where(key(kind, id));
 }
 
-/** Keeps a listed title's copy of TMDB's details current. Returns whether it's listed. */
+/** Keeps a listed title's copy of TMDB's details current. Returns its row, if listed. */
 export async function refreshListed(db: DB, t: Title) {
-	const updated = await db
+	const [row] = await db
 		.update(watchlist)
 		.set({ name: t.name, years: t.years, poster: t.poster, watchableOn: watchableOn(t.providers) })
 		.where(key(t.kind, t.id))
-		.returning({ id: watchlist.tmdbId });
-	return updated.length > 0;
+		.returning();
+	return row ?? null;
 }
 
 /** The household's services, most popular first (as TMDB had them when chosen). */

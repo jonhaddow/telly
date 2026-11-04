@@ -10,6 +10,13 @@ const dayLabel = new Intl.DateTimeFormat('en-GB', {
 	timeZone: 'UTC'
 });
 
+const longDay = new Intl.DateTimeFormat('en-GB', {
+	day: 'numeric',
+	month: 'short',
+	year: 'numeric',
+	timeZone: 'UTC'
+});
+
 const DAY = 86_400_000;
 const time = (day: string) => Date.parse(`${day}T00:00:00Z`);
 
@@ -26,6 +33,12 @@ export const daysBetween = (from: string, to: string) => Math.round((time(to) - 
 /** "Fri 16 Oct" for 2026-10-16. */
 export const formatDay = (day: string) =>
 	dayLabel.format(new Date(`${day}T12:00:00Z`)).replace(',', '');
+
+/** "Fri 16 Oct" this year, "16 Oct 2023" other years. */
+export const formatDate = (day: string, from: string) =>
+	day.slice(0, 4) === from.slice(0, 4)
+		? formatDay(day)
+		: longDay.format(new Date(`${day}T12:00:00Z`));
 
 /** "Today", "Yesterday", "Tomorrow", "In 3 days", "3 days ago", or the date further out. */
 export function relativeDay(day: string, from: string) {

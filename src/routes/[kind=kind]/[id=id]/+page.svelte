@@ -3,6 +3,7 @@
 	import { enhance } from '$app/forms';
 	import { stay } from '#lib/forms.ts';
 	import Poster from '#lib/components/Poster.svelte';
+	import ShowEpisodes from '#lib/components/ShowEpisodes.svelte';
 	import WhereToWatch from '#lib/components/WhereToWatch.svelte';
 	import { formatRuntime, formatVotes, imageUrl } from '#lib/titles.ts';
 	import type { PageProps } from './$types';
@@ -14,7 +15,7 @@
 		[
 			t.kind === 'movie' ? 'Film' : 'TV',
 			t.years,
-			t.seasons ? `${t.seasons} season${t.seasons === 1 ? '' : 's'}` : null,
+			t.seasons.length ? `${t.seasons.length} season${t.seasons.length === 1 ? '' : 's'}` : null,
 			t.runtime ? formatRuntime(t.runtime) : null
 		].filter(Boolean)
 	);
@@ -91,6 +92,16 @@
 				{/if}
 			{/await}
 		</section>
+	{/if}
+
+	{#if t.seasons.length}
+		<ShowEpisodes
+			show={t.id}
+			seasons={t.seasons}
+			watchedBySeason={data.watchedBySeason}
+			watchedAny={data.watchedAny}
+			next={data.next}
+		/>
 	{/if}
 
 	<WhereToWatch providers={t.providers} ours={data.ours} />

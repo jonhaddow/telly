@@ -45,10 +45,10 @@ describe('watchlist', () => {
 	it('refreshes where to watch for listed titles only', async () => {
 		const db = await setup();
 		const film = (await api.title('movie', 1001))!;
-		expect(await refreshListed(db, film)).toBe(false);
+		expect(await refreshListed(db, film)).toBeNull();
 		await addToWatchlist(db, film, 1);
 		const moved = { ...film, providers: { ...film.providers, stream: [], free: [] } };
-		expect(await refreshListed(db, moved)).toBe(true);
+		expect((await refreshListed(db, moved))?.watchableOn).toEqual([]);
 		expect((await watchlistRows(db))[0].watchableOn).toEqual([]);
 	});
 });
@@ -57,7 +57,7 @@ describe('services', () => {
 	it('replaces the chosen services, keeping their order', async () => {
 		const db = await setup();
 		const all = await api.services();
-		await setServices(db, [all[3], all[0]]);
+		await setServices(db, [all[2], all[0]]);
 		expect((await services(db)).map((s) => s.name)).toEqual(['BBC iPlayer', 'Netflix']);
 		await setServices(db, []);
 		expect(await services(db)).toEqual([]);
