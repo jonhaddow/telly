@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { afterNavigate } from '$app/navigation';
+	import { enhance } from '$app/forms';
+	import { stay } from '#lib/forms.ts';
 	import Poster from '#lib/components/Poster.svelte';
+	import WhereToWatch from '#lib/components/WhereToWatch.svelte';
 	import { formatRuntime, formatVotes, imageUrl } from '#lib/titles.ts';
 	import type { PageProps } from './$types';
 
@@ -54,6 +57,14 @@
 		</div>
 	</header>
 
+	<form method="POST" action={data.listed ? '?/remove' : '?/add'} use:enhance={stay}>
+		<input type="hidden" name="kind" value={t.kind} />
+		<input type="hidden" name="id" value={t.id} />
+		<button class="listed" class:on={data.listed}>
+			{data.listed ? '✓ On the watchlist' : '+ Add to watchlist'}
+		</button>
+	</form>
+
 	{#if t.imdbId}
 		<section class="ratings" aria-label="Ratings">
 			{#await data.ratings}
@@ -81,6 +92,8 @@
 			{/await}
 		</section>
 	{/if}
+
+	<WhereToWatch providers={t.providers} ours={data.ours} />
 
 	{#if t.trailer}
 		<a class="trailer" href="https://www.youtube.com/watch?v={t.trailer}">
@@ -151,6 +164,25 @@
 		font-size: 12px;
 		font-weight: 800;
 		line-height: 18px;
+	}
+	.listed {
+		width: 100%;
+		min-height: 50px;
+		border: 0;
+		border-radius: 14px;
+		background: var(--accent);
+		color: var(--on-accent);
+		font-size: 16px;
+		font-weight: 800;
+		cursor: pointer;
+		transition: opacity 0.1s;
+	}
+	.listed:active {
+		opacity: 0.7;
+	}
+	.listed.on {
+		background: var(--line);
+		color: var(--ink);
 	}
 	.ratings {
 		display: flex;

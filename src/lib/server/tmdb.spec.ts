@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { fakeFetch } from './fake-apis.ts';
-import { pickTrailer, tmdb, toTitle } from './tmdb.ts';
+import { pickTrailer, tmdb, toProviders, toTitle } from './tmdb.ts';
 
 const video = (key: string, type: string, official: boolean, published_at: string) => ({
 	key,
@@ -58,7 +58,8 @@ describe('toTitle', () => {
 				seasons: null,
 				episodes: null,
 				imdbId: null,
-				trailer: null
+				trailer: null,
+				providers: { link: null, stream: [], free: [], buy: [] }
 			});
 		}
 	});
@@ -101,5 +102,36 @@ describe('tmdb', () => {
 	it('returns null for an unknown title', async () => {
 		expect(await api.title('movie', 999)).toBeNull();
 		expect((await api.title('movie', 1001))?.trailer).toBe('fakeTrailer1');
+	});
+});
+
+describe('toProviders', () => {
+	const p = (id: number, display_priority: number) => ({
+		provider_id: id,
+		provider_name: `P${id}`,
+		display_priority
+	});
+
+	it('lists each service once, in its cheapest group, most popular first', () => {
+		const r = toProviders({
+			flatrate: [p(2, 5), p(1, 1)],
+			free: [p(3, 3), p(1, 1)],
+			ads: [p(4, 2)],
+			rent: [p(5, 9), p(2, 5)],
+			buy: [p(5, 9), p(6, 8)]
+		});
+		expect([r.stream, r.free, r.buy].map((g) => g.map((x) => x.id))).toEqual([
+			[1, 2],
+			[4, 3],
+			[6, 5]
+		]);
+		expect(toProviders(undefined)).toEqual({ link: null, stream: [], free: [], buy: [] });
+	});
+});
+
+describe('services', () => {
+	it('lists UK services once each, without add-on channels', async () => {
+		const names = (await tmdb('token', fakeFetch).services()).map((s) => s.name);
+		expect(names).toEqual(['Netflix', 'Amazon Prime Video', 'Apple TV Store', 'BBC iPlayer']);
 	});
 });

@@ -1,7 +1,41 @@
 // Stand-ins for TMDB and OMDb in local development and the end-to-end tests
-// (see apis.ts), so neither needs keys or the network. Made-up titles.
+// (see apis.ts), so neither needs keys. Made-up titles; real service logos.
 import type { RawOmdb } from './omdb.ts';
 import type { RawSummary, RawTitle } from './tmdb.ts';
+
+const NETFLIX = {
+	provider_id: 8,
+	provider_name: 'Netflix',
+	logo_path: '/rK1KljqmbvO9HQa1PBFLILWah72.png',
+	display_priority: 1
+};
+const PRIME = {
+	provider_id: 9,
+	provider_name: 'Amazon Prime Video',
+	logo_path: '/gMZdpavHmxFNnLpMHwVxfqeux2g.png',
+	display_priority: 2
+};
+const IPLAYER = {
+	provider_id: 38,
+	provider_name: 'BBC iPlayer',
+	logo_path: '/vi6XJCpJ9GpAPD3rDSRzMC812Z.png',
+	display_priority: 18
+};
+const STORE = {
+	provider_id: 2,
+	provider_name: 'Apple TV Store',
+	logo_path: '/qdEGArH3lKfFnAtYXMkSYk5wxuG.png',
+	display_priority: 6
+};
+const CHANNEL = {
+	provider_id: 1825,
+	provider_name: 'HBO Max Amazon Channel',
+	logo_path: '/64fLWeSyZ1KQZhIdvTdy4QHeWty.png'
+};
+const SERVICES = [NETFLIX, PRIME, STORE, IPLAYER, CHANNEL].map((p, i) => ({
+	...p,
+	display_priorities: { GB: i + 1 }
+}));
 
 const TITLES: (RawTitle & { media_type: 'movie' | 'tv' })[] = [
 	{
@@ -31,7 +65,17 @@ const TITLES: (RawTitle & { media_type: 'movie' | 'tv' })[] = [
 				}
 			]
 		},
-		release_dates: { results: [{ iso_3166_1: 'GB', release_dates: [{ certification: '12A' }] }] }
+		release_dates: { results: [{ iso_3166_1: 'GB', release_dates: [{ certification: '12A' }] }] },
+		'watch/providers': {
+			results: {
+				GB: {
+					link: 'https://www.themoviedb.org/movie/1001/watch?locale=GB',
+					flatrate: [NETFLIX],
+					rent: [STORE],
+					buy: [STORE, PRIME]
+				}
+			}
+		}
 	},
 	{
 		media_type: 'tv',
@@ -52,7 +96,8 @@ const TITLES: (RawTitle & { media_type: 'movie' | 'tv' })[] = [
 		number_of_episodes: 24,
 		external_ids: { imdb_id: 'tt2000001' },
 		videos: { results: [] },
-		content_ratings: { results: [{ iso_3166_1: 'GB', rating: '15' }] }
+		content_ratings: { results: [{ iso_3166_1: 'GB', rating: '15' }] },
+		'watch/providers': { results: { GB: { free: [IPLAYER] } } }
 	},
 	{
 		media_type: 'tv',
@@ -89,6 +134,7 @@ export const fakeFetch: typeof fetch = async (input) => {
 		return json(RATINGS[url.searchParams.get('i') ?? ''] ?? { Response: 'False' });
 	}
 	const path = url.pathname.replace(/^\/3/, '');
+	if (path.startsWith('/watch/providers/')) return json({ results: SERVICES });
 	if (path === '/search/multi') {
 		const words = (url.searchParams.get('query') ?? '').toLowerCase();
 		const results: RawSummary[] = TITLES.filter((t) =>

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
+	import { stay } from '#lib/forms.ts';
 	import { afterNavigate, goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import Poster from '#lib/components/Poster.svelte';
@@ -72,6 +74,19 @@
 							</span>
 						</span>
 					</a>
+					<form method="POST" action={t.listed ? '?/remove' : '?/add'} use:enhance={stay}>
+						<input type="hidden" name="kind" value={t.kind} />
+						<input type="hidden" name="id" value={t.id} />
+						<button
+							class="add"
+							class:on={t.listed}
+							aria-label={t.listed
+								? `Remove ${t.name} from the watchlist`
+								: `Add ${t.name} to the watchlist`}
+						>
+							{t.listed ? '✓' : '+'}
+						</button>
+					</form>
 				</li>
 			{/each}
 		</ul>
@@ -93,7 +108,14 @@
 		outline-offset: 1px;
 		border-color: transparent;
 	}
+	.results li {
+		display: flex;
+		align-items: center;
+		padding-right: 10px;
+	}
 	.results a {
+		flex: 1;
+		min-width: 0;
 		display: grid;
 		grid-template-columns: 48px 1fr;
 		gap: 14px;
@@ -103,6 +125,21 @@
 	}
 	.results a:active {
 		background: var(--line);
+	}
+	.add {
+		width: 44px;
+		height: 44px;
+		border: 0;
+		border-radius: 50%;
+		background: var(--line);
+		color: var(--ink);
+		font-size: 22px;
+		font-weight: 700;
+		cursor: pointer;
+	}
+	.add.on {
+		background: var(--accent);
+		color: var(--on-accent);
 	}
 	.text {
 		display: flex;

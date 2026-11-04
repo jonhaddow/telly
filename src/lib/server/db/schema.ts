@@ -1,4 +1,5 @@
-import { index, integer, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { index, integer, primaryKey, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { KINDS } from '../../titles.ts';
 
 // Days are UK dates as YYYY-MM-DD text; times are ISO timestamps.
 
@@ -53,3 +54,34 @@ export const rating = sqliteTable('rating', {
 });
 
 export type Rating = typeof rating.$inferSelect;
+
+/** The streaming services the household has (TMDB's provider ids). */
+export const service = sqliteTable('service', {
+	providerId: integer('provider_id').primaryKey(),
+	name: text('name').notNull(),
+	logo: text('logo'),
+	sortOrder: integer('sort_order').notNull().default(0)
+});
+
+/**
+ * Films and shows the household wants to watch: one shared list. Name, poster
+ * and where to watch are copied from TMDB, so the list loads without calling it;
+ * where to watch is refreshed whenever the title's page opens.
+ */
+export const watchlist = sqliteTable(
+	'watchlist',
+	{
+		kind: text('kind', { enum: KINDS }).notNull(),
+		tmdbId: integer('tmdb_id').notNull(),
+		name: text('name').notNull(),
+		years: text('years'),
+		poster: text('poster'),
+		/** Ids of the services showing it at no extra cost (JSON array). */
+		watchableOn: text('watchable_on', { mode: 'json' }).$type<number[]>().notNull(),
+		addedBy: integer('added_by').references(() => user.id, { onDelete: 'set null' }),
+		addedAt: text('added_at').notNull()
+	},
+	(t) => [primaryKey({ columns: [t.kind, t.tmdbId] }), index('watchlist_added_idx').on(t.addedAt)]
+);
+
+export type WatchlistRow = typeof watchlist.$inferSelect;

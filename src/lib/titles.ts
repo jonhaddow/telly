@@ -29,7 +29,26 @@ export type Title = TitleSummary & {
 	imdbId: string | null;
 	/** YouTube video id of the trailer. */
 	trailer: string | null;
+	/** Where to watch it in the UK (JustWatch's data, via TMDB). */
+	providers: Providers;
 };
+
+/** A streaming service, shop or channel. */
+export type Provider = { id: number; name: string; logo: string | null };
+
+export type Providers = {
+	/** TMDB's where-to-watch page for the title, which links on to each service. */
+	link: string | null;
+	/** Included with a subscription. */
+	stream: Provider[];
+	/** Free, perhaps with ads. */
+	free: Provider[];
+	/** To rent or buy. */
+	buy: Provider[];
+};
+
+/** Ids of the services showing it at no extra cost: subscription or free. */
+export const watchableOn = (p: Providers) => [...p.stream, ...p.free].map((s) => s.id);
 
 export type Ratings = {
 	imdb: number | null;

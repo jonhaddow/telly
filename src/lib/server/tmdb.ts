@@ -1,11 +1,34 @@
-// The Movie Database (TMDB): search, film and show details, trailers.
+// The Movie Database (TMDB): search, film and show details, trailers, and
+// where to watch (JustWatch's data).
 // https://developer.themoviedb.org/reference. Free for non-commercial use, with
 // the credit on the settings page.
-import { KINDS, type Kind, type Title, type TitleSummary } from '../titles.ts';
+import {
+	KINDS,
+	type Kind,
+	type Provider,
+	type Providers,
+	type Title,
+	type TitleSummary
+} from '../titles.ts';
 
 const BASE = 'https://api.themoviedb.org/3';
 
 type Genre = { id: number; name: string };
+type RawProvider = {
+	provider_id: number;
+	provider_name: string;
+	logo_path?: string | null;
+	display_priority?: number;
+	display_priorities?: Record<string, number>;
+};
+type RawProviders = {
+	link?: string;
+	flatrate?: RawProvider[];
+	free?: RawProvider[];
+	ads?: RawProvider[];
+	rent?: RawProvider[];
+	buy?: RawProvider[];
+};
 type Video = { key: string; site: string; type: string; official: boolean; published_at: string };
 
 /** The parts of TMDB's responses the app reads. */
@@ -38,6 +61,7 @@ export type RawTitle = RawSummary & {
 		results: { iso_3166_1: string; release_dates: { certification: string }[] }[];
 	};
 	content_ratings?: { results: { iso_3166_1: string; rating: string }[] };
+	'watch/providers'?: { results: Record<string, RawProviders> };
 };
 
 const year = (date?: string | null) => (date ? date.slice(0, 4) : null);
@@ -81,6 +105,43 @@ function certificate(kind: Kind, t: RawTitle): string | null {
 	return t.content_ratings?.results.find((r) => r.iso_3166_1 === 'GB')?.rating || null;
 }
 
+const toProvider = (p: RawProvider): Provider => ({
+	id: p.provider_id,
+	name: p.provider_name,
+	logo: p.logo_path ?? null
+});
+
+/** Each service once, by the given priority (JustWatch's: most popular first). */
+function ranked(list: RawProvider[], priority: (p: RawProvider) => number | undefined) {
+	const seen = new Set<number>();
+	return list
+		.sort((a, b) => (priority(a) ?? 999) - (priority(b) ?? 999))
+		.filter((p) => !seen.has(p.provider_id) && seen.add(p.provider_id))
+		.map(toProvider);
+}
+
+const merge = (...lists: (RawProvider[] | undefined)[]) =>
+	ranked(
+		lists.flatMap((l) => l ?? []),
+		(p) => p.display_priority
+	);
+
+/** UK where-to-watch. A service in more than one group shows in the cheapest only. */
+export function toProviders(raw: RawProviders | undefined): Providers {
+	const stream = merge(raw?.flatrate);
+	const free = merge(raw?.free, raw?.ads);
+	const taken = new Set([...stream, ...free].map((p) => p.id));
+	return {
+		link: raw?.link ?? null,
+		stream,
+		free: free.filter((p) => !stream.some((s) => s.id === p.id)),
+		buy: merge(raw?.rent, raw?.buy).filter((p) => !taken.has(p.id))
+	};
+}
+
+/** Amazon and Apple's add-on channels: the service itself is listed too. */
+const isChannel = (name: string) => / Channel$/.test(name);
+
 export function toTitle(kind: Kind, t: RawTitle): Title {
 	return {
 		...toSummary(kind, t),
@@ -96,7 +157,8 @@ export function toTitle(kind: Kind, t: RawTitle): Title {
 		seasons: kind === 'tv' ? (t.number_of_seasons ?? null) : null,
 		episodes: kind === 'tv' ? (t.number_of_episodes ?? null) : null,
 		imdbId: (kind === 'movie' ? t.imdb_id : t.external_ids?.imdb_id) || null,
-		trailer: pickTrailer(t.videos?.results ?? [])
+		trailer: pickTrailer(t.videos?.results ?? []),
+		providers: toProviders(t['watch/providers']?.results.GB)
 	};
 }
 
@@ -130,13 +192,27 @@ export function tmdb(token: string, fetcher: typeof fetch = fetch) {
 		/** A film or show, or null if TMDB has no such id. */
 		async title(kind: Kind, id: number): Promise<Title | null> {
 			const extra =
-				kind === 'movie' ? 'videos,release_dates' : 'videos,content_ratings,external_ids';
+				(kind === 'movie' ? 'videos,release_dates' : 'videos,content_ratings,external_ids') +
+				',watch/providers';
 			// Trailers in any language, so foreign films still have one.
 			const data = await get<RawTitle>(`/${kind}/${id}`, {
 				append_to_response: extra,
 				include_video_language: 'en,null'
 			});
 			return data && toTitle(kind, data);
+		},
+
+		/** UK streaming services, most popular first, without add-on channels. */
+		async services(): Promise<Provider[]> {
+			const lists = await Promise.all(
+				KINDS.map((k) =>
+					get<{ results: RawProvider[] }>(`/watch/providers/${k}`, { watch_region: 'GB' })
+				)
+			);
+			return ranked(
+				lists.flatMap((l) => l?.results ?? []).filter((p) => !isChannel(p.provider_name)),
+				(p) => p.display_priorities?.GB
+			);
 		}
 	};
 }
