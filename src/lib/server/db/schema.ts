@@ -64,9 +64,10 @@ export const service = sqliteTable('service', {
 });
 
 /**
- * Films and shows the household wants to watch: one shared list. Name, poster
- * and where to watch are copied from TMDB, so the list loads without calling it;
- * where to watch is refreshed whenever the title's page opens.
+ * Films and shows the household wants to watch or has seen: one shared list,
+ * split by `isSeen` (watchlist.ts). Name, poster and where to watch are copied
+ * from TMDB, so the list loads without calling it; where to watch is refreshed
+ * whenever the title's page opens.
  */
 export const watchlist = sqliteTable(
 	'watchlist',
@@ -90,6 +91,8 @@ export const watchlist = sqliteTable(
 		nextStill: text('next_still'),
 		/** When an episode was last ticked: Up next puts the latest first. */
 		watchedAt: text('watched_at'),
+		/** Films: when marked seen. Shows are seen by their episodes (`isSeen`). */
+		seenAt: text('seen_at'),
 		/** When the hourly check (alerts.ts) last looked at it on TMDB. */
 		checkedAt: text('checked_at'),
 		/** Shows: the latest episode out when last checked ("3x4"), to spot new ones. */

@@ -1,9 +1,9 @@
-// The hourly check (worker/entry.js → /check): looks at the watchlist titles
-// checked longest ago on TMDB, keeps their copies current, and says what's new:
-// an episode of a show being watched, a new season of one that isn't yet, or a
-// title arriving on one of our services. A few titles a run, so each stays
-// within the free plan's CPU and 50 outbound requests.
-import { asc, eq, and, sql } from 'drizzle-orm';
+// The hourly check (worker/entry.js → /check): looks at the listed titles (not
+// seen films) checked longest ago on TMDB, keeps their copies current, and says
+// what's new: an episode of a show being watched, a new season of one that isn't
+// yet, or a title arriving on one of our services. A few titles a run, so each
+// stays within the free plan's CPU and 50 outbound requests.
+import { asc, eq, and, isNull, sql } from 'drizzle-orm';
 import { addDays } from '../dates.ts';
 import { watchlist, type WatchlistRow } from './db/schema.ts';
 import type { DB } from './db/index.ts';
@@ -101,6 +101,8 @@ export async function checkTitles(
 		db
 			.select()
 			.from(watchlist)
+			// Not seen films: nothing new to say about them.
+			.where(isNull(watchlist.seenAt))
 			// Never checked first, then the longest ago.
 			.orderBy(sql`${watchlist.checkedAt} IS NOT NULL`, asc(watchlist.checkedAt))
 			.limit(limit),

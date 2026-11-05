@@ -1,5 +1,5 @@
 import { and, desc, eq } from 'drizzle-orm';
-import { service, watchlist } from './db/schema.ts';
+import { service, watchlist, type WatchlistRow } from './db/schema.ts';
 import type { DB } from './db/index.ts';
 import { watchableOn, type Kind, type Provider, type Title } from '../titles.ts';
 
@@ -30,6 +30,37 @@ export async function addToWatchlist(db: DB, t: Title, userId: number, now = new
 			addedAt: now.toISOString()
 		})
 		.onConflictDoNothing();
+}
+
+/** A show's next episode is out (so it's up next). */
+export const nextOut = (row: Pick<WatchlistRow, 'nextSeason' | 'nextAirDate'>, today: string) =>
+	!!row.nextSeason && !!row.nextAirDate && row.nextAirDate <= today;
+
+/**
+ * Seen: a film marked seen, or a show ticked up to its latest aired episode (its
+ * next one isn't out). A new episode puts the show back on the watchlist.
+ */
+export function isSeen(
+	row: Pick<WatchlistRow, 'kind' | 'seenAt' | 'watchedAt' | 'nextSeason' | 'nextAirDate'>,
+	today: string
+) {
+	if (row.kind === 'movie') return !!row.seenAt;
+	return !!row.watchedAt && !nextOut(row, today);
+}
+
+/** Marks a film seen (listing it if need be), or back to the watchlist. */
+export async function setSeen(
+	db: DB,
+	film: Title,
+	seen: boolean,
+	userId: number,
+	now = new Date()
+) {
+	if (seen) await addToWatchlist(db, film, userId, now);
+	await db
+		.update(watchlist)
+		.set({ seenAt: seen ? now.toISOString() : null })
+		.where(key('movie', film.id));
 }
 
 export async function removeFromWatchlist(db: DB, kind: Kind, id: number) {

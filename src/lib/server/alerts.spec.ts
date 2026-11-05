@@ -127,4 +127,20 @@ describe('checkTitles', () => {
 			['Harbour Lights', '3x2', [38]]
 		]);
 	});
+
+	it('leaves seen films alone', async () => {
+		const db = await testDb();
+		await db.insert(user).values({ email: 'a@example.com', name: 'A' });
+		const film = { kind: 'movie' as const, watchableOn: [], addedAt: '2026-11-01' };
+		await db.insert(watchlist).values([
+			{ ...film, tmdbId: 1001, name: 'Seen', seenAt: '2026-11-02' },
+			{ ...film, tmdbId: 1002, name: 'Not seen' }
+		]);
+		await checkTitles(db, api, TODAY);
+		const rows = await db.select().from(watchlist);
+		expect(rows.map((r) => [r.tmdbId, !!r.checkedAt])).toEqual([
+			[1001, false],
+			[1002, true]
+		]);
+	});
 });

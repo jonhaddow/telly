@@ -20,6 +20,15 @@
 		].filter(Boolean)
 	);
 
+	// Films share the row with Seen it, so their labels are short.
+	const main = $derived(
+		data.seen
+			? { action: t.kind === 'movie' ? '?/seen' : '?/remove', label: '✓ Seen' }
+			: data.listed
+				? { action: '?/remove', label: t.kind === 'movie' ? '✓ Watchlist' : '✓ On the watchlist' }
+				: { action: '?/add', label: t.kind === 'movie' ? '+ Watchlist' : '+ Add to watchlist' }
+	);
+
 	// Back to wherever you came from in the app (search results keep their words);
 	// opened from a link or a notification, to search.
 	let fromApp = false;
@@ -58,13 +67,22 @@
 		</div>
 	</header>
 
-	<form method="POST" action={data.listed ? '?/remove' : '?/add'} use:enhance={stay}>
-		<input type="hidden" name="kind" value={t.kind} />
-		<input type="hidden" name="id" value={t.id} />
-		<button class="listed" class:on={data.listed}>
-			{data.listed ? '✓ On the watchlist' : '+ Add to watchlist'}
-		</button>
-	</form>
+	<div class="actions">
+		<!-- A seen film goes back to the watchlist (seen by mistake); otherwise add or remove. -->
+		<form method="POST" action={main.action} use:enhance={stay}>
+			<input type="hidden" name="kind" value={t.kind} />
+			<input type="hidden" name="id" value={t.id} />
+			<button class="listed" class:on={data.listed}>{main.label}</button>
+		</form>
+		{#if t.kind === 'movie' && !data.seen}
+			<form method="POST" action="?/seen" use:enhance={stay}>
+				<input type="hidden" name="kind" value={t.kind} />
+				<input type="hidden" name="id" value={t.id} />
+				<input type="hidden" name="seen" value="1" />
+				<button class="listed on">Seen it</button>
+			</form>
+		{/if}
+	</div>
 
 	{#if t.imdbId}
 		<section class="ratings" aria-label="Ratings">
@@ -174,6 +192,13 @@
 		font-size: 12px;
 		font-weight: 800;
 		line-height: 18px;
+	}
+	.actions {
+		display: flex;
+		gap: 10px;
+	}
+	.actions form {
+		flex: 1;
 	}
 	.listed {
 		width: 100%;
