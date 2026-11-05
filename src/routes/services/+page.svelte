@@ -11,7 +11,7 @@
 </svelte:head>
 
 <main class="page">
-	<a class="back" href="/settings">‹ Settings</a>
+	<a class="back" href="/settings">Settings</a>
 	<h1>Your services</h1>
 	<p class="muted">
 		The ones you pay for or watch free. Titles on these come first, and the watchlist can show just

@@ -42,7 +42,7 @@
 {/if}
 
 <main class="page" class:over-backdrop={!!t.backdrop}>
-	<a class="back" href="/search" onclick={back}>‹ Back</a>
+	<a class="back" href="/search" onclick={back}>Back</a>
 
 	<header>
 		<div class="poster"><Poster path={t.poster} name={t.name} width="w342" /></div>

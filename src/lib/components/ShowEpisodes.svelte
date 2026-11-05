@@ -52,7 +52,7 @@
 							: seen
 								? `${seen} of ${s.episodes}`
 								: `${s.episodes} episodes`}
-						›
+						<span class="go" aria-hidden="true">→</span>
 					</span>
 				</a>
 			</li>

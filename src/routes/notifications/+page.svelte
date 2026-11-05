@@ -113,7 +113,7 @@
 </svelte:head>
 
 <main class="page">
-	<a class="back" href="/settings">‹ Settings</a>
+	<a class="back" href="/settings">Settings</a>
 	<h1>Notifications</h1>
 
 	{#if message}<p class="note" role="status">{message}</p>{/if}

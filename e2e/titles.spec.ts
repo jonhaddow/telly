@@ -18,7 +18,7 @@ test('search, open a film and see its ratings and trailer', async ({ page }) => 
 	);
 
 	// Back keeps the search.
-	await page.getByRole('link', { name: '‹ Back' }).click();
+	await page.getByRole('link', { name: 'Back', exact: true }).click();
 	await expect(page).toHaveURL(/q=light/);
 	await expect(page.getByRole('searchbox')).toHaveValue('light');
 });

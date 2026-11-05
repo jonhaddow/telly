@@ -135,14 +135,12 @@
 		box-shadow: var(--shadow);
 	}
 
+	/* Rows ruled off like a listings page, not boxed in a card. */
 	.list {
 		list-style: none;
 		margin: 0;
 		padding: 0;
-		background: var(--card);
-		border-radius: var(--radius);
-		box-shadow: var(--shadow);
-		overflow: hidden;
+		border-block: 1px solid var(--line);
 	}
 
 	.list > li + li {
@@ -182,26 +180,41 @@
 		font-size: 15px;
 	}
 
+	/* "← Back" in the headings' type and the accent. The arrow is decoration,
+	   so the link's name is just its text. */
 	.back {
 		display: inline-flex;
 		align-items: center;
+		gap: 6px;
 		min-height: 44px;
-		color: var(--muted);
+		color: var(--accent);
 		text-decoration: none;
-		font-weight: 600;
-		font-size: 15px;
+		font-family: var(--display);
+		font-weight: 800;
+		font-size: 19px;
+		letter-spacing: 0.5px;
+		text-transform: uppercase;
 		align-self: flex-start;
 	}
 
-	/* A switch between two or three views or settings: links, or radio labels. */
+	.back::before {
+		content: '←' / '';
+		font-family: system-ui, sans-serif;
+		font-size: 18px;
+	}
+
+	/* A forward arrow at the end of a row that opens a page. */
+	.go {
+		color: var(--accent);
+	}
+
+	/* A switch between two or three views or settings: links, or radio labels.
+	   Channel tabs along a rule; the chosen one is lit and underlined. */
 	.segments {
 		display: grid;
 		grid-auto-columns: minmax(0, 1fr);
 		grid-auto-flow: column;
-		gap: 4px;
-		padding: 3px;
-		border-radius: var(--radius);
-		background: var(--line);
+		border-bottom: 1px solid var(--line);
 	}
 
 	.segments > * {
@@ -210,11 +223,11 @@
 		align-items: center;
 		justify-content: center;
 		gap: 6px;
-		min-height: 40px;
-		/* Inside the track's padding. */
-		border-radius: var(--radius-sm);
-		font-weight: 600;
-		font-size: 15px;
+		min-height: 44px;
+		font-weight: 700;
+		font-size: 13px;
+		letter-spacing: 1px;
+		text-transform: uppercase;
 		color: var(--muted);
 		text-decoration: none;
 		cursor: pointer;
@@ -229,8 +242,8 @@
 	/* The chosen one. */
 	.segments > [aria-current='page'],
 	.segments > :has(input:checked) {
-		background: var(--accent);
-		color: var(--on-accent);
+		color: var(--accent);
+		box-shadow: inset 0 -3px var(--accent);
 	}
 
 	.segments > :has(input:focus-visible) {
@@ -251,12 +264,14 @@
 		align-items: center;
 		min-height: 44px;
 		padding: 0 16px;
-		border: 0;
+		border: 1.5px solid var(--field);
 		border-radius: var(--radius);
-		background: var(--line);
+		background: transparent;
 		color: var(--ink);
-		font-size: 15px;
+		font-size: 13px;
 		font-weight: 700;
+		letter-spacing: 0.8px;
+		text-transform: uppercase;
 		text-decoration: none;
 		cursor: pointer;
 	}
@@ -286,14 +301,16 @@
 
 	.chip.on,
 	.chip:has(input:checked) {
+		border-color: var(--accent);
 		background: var(--accent);
 		color: var(--on-accent);
 	}
 
+	/* A word from the app: a yellow rule down the side, like a listing's note. */
 	.note {
+		border-left: 3px solid var(--accent);
 		background: var(--note-bg);
-		color: var(--note-ink);
-		border-radius: var(--radius);
+		color: var(--ink);
 		padding: 12px 14px;
 		font-size: 15px;
 	}

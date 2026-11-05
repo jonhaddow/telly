@@ -12,8 +12,8 @@
 	<h1>Settings</h1>
 
 	<ul class="list">
-		<li><a href="/services">Your services <span class="muted">›</span></a></li>
-		<li><a href="/notifications">Notifications <span class="muted">›</span></a></li>
+		<li><a href="/services">Your services <span class="go" aria-hidden="true">→</span></a></li>
+		<li><a href="/notifications">Notifications <span class="go" aria-hidden="true">→</span></a></li>
 	</ul>
 
 	<section class="group people">

@@ -17,7 +17,7 @@ test('tick episodes: a season, up next on the show and the watchlist', async ({ 
 	await expect(page.getByRole('button', { name: 'S1 E2 watched; mark not watched' })).toBeVisible();
 
 	// The show now has an episode up next, and is on the watchlist.
-	await page.getByRole('link', { name: '‹ Harbour Lights' }).click();
+	await page.getByRole('link', { name: 'Harbour Lights', exact: true }).click();
 	await expect(page.getByText('Up next · S2 E1')).toBeVisible();
 	await expect(page.getByRole('button', { name: '✓ On the watchlist' })).toBeVisible();
 	await page.getByRole('button', { name: 'Mark S2 E1 watched' }).click();
