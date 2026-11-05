@@ -20,13 +20,13 @@
 		].filter(Boolean)
 	);
 
-	// Films share the row with Seen it, so their labels are short.
+	// A seen film goes back to the watchlist (seen by mistake); otherwise add or remove.
 	const main = $derived(
 		data.seen
 			? { action: t.kind === 'movie' ? '?/seen' : '?/remove', label: '✓ Seen' }
 			: data.listed
-				? { action: '?/remove', label: t.kind === 'movie' ? '✓ Watchlist' : '✓ On the watchlist' }
-				: { action: '?/add', label: t.kind === 'movie' ? '+ Watchlist' : '+ Add to watchlist' }
+				? { action: '?/remove', label: '✓ Watchlist' }
+				: { action: '?/add', label: '+ Watchlist' }
 	);
 
 	// Back to wherever you came from in the app (search results keep their words);
@@ -68,13 +68,12 @@
 	</header>
 
 	<div class="actions">
-		<!-- A seen film goes back to the watchlist (seen by mistake); otherwise add or remove. -->
 		<form method="POST" action={main.action} use:enhance={stay}>
 			<input type="hidden" name="kind" value={t.kind} />
 			<input type="hidden" name="id" value={t.id} />
 			<button class="listed" class:on={data.listed}>{main.label}</button>
 		</form>
-		{#if t.kind === 'movie' && !data.seen}
+		{#if !data.seen && (t.kind === 'movie' || t.latest)}
 			<form method="POST" action="?/seen" use:enhance={stay}>
 				<input type="hidden" name="kind" value={t.kind} />
 				<input type="hidden" name="id" value={t.id} />

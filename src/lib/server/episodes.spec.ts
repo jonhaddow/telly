@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { user, watchlist } from './db/schema.ts';
 import { fakeFetch } from './fake-apis.ts';
-import { nextAfter, setWatched, updateProgress, watchedEpisodes } from './episodes.ts';
+import {
+	airedEpisodes,
+	nextAfter,
+	setWatched,
+	updateProgress,
+	watchAll,
+	watchedEpisodes
+} from './episodes.ts';
 import { testDb } from './test-db.ts';
 import { tmdb } from './tmdb.ts';
 
@@ -52,5 +59,17 @@ describe('tracking', () => {
 		await setWatched(db, 2001, 1, [1], false, 1);
 		await updateProgress(db, api, show);
 		expect((await db.select().from(watchlist))[0].watchedAt).toBeNull();
+	});
+
+	it('marks a whole show watched: what’s out, and onto the list', async () => {
+		const db = await testDb();
+		await db.insert(user).values({ email: 'a@example.com', name: 'A' });
+		const show = (await api.title('tv', 2001))!;
+		const aired = airedEpisodes(show);
+		expect(aired.at(-1)).toEqual(ep(show.latest!.season, show.latest!.number));
+		// Next is the episode still to come.
+		expect((await watchAll(db, api, show, 1))?.number).toBe(show.latest!.number + 1);
+		expect(await watchedEpisodes(db, 2001)).toHaveLength(aired.length);
+		expect((await db.select().from(watchlist))[0].watchedAt).not.toBeNull();
 	});
 });
