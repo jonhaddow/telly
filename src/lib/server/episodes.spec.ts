@@ -47,5 +47,10 @@ describe('tracking', () => {
 		await setWatched(db, 2001, 1, [2, 3], false, 1);
 		expect(await watchedEpisodes(db, 2001)).toEqual([ep(1, 1)]);
 		expect((await updateProgress(db, api, show))?.number).toBe(2);
+
+		// All unticked: no longer being watched.
+		await setWatched(db, 2001, 1, [1], false, 1);
+		await updateProgress(db, api, show);
+		expect((await db.select().from(watchlist))[0].watchedAt).toBeNull();
 	});
 });

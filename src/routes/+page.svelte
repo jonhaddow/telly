@@ -7,12 +7,19 @@
 	let { data }: PageProps = $props();
 
 	/** This page's address with a filter changed. */
-	function href(change: { kind?: string | null; mine?: boolean }) {
+	function href(change: { seen?: boolean; kind?: string | null; mine?: boolean }) {
+		const seen = change.seen ?? data.seen;
 		const kind = change.kind === undefined ? data.kind : change.kind;
-		const mine = change.mine ?? data.mine;
-		const q = [kind && `kind=${kind}`, mine && 'mine=1'].filter(Boolean).join('&');
+		const mine = !seen && (change.mine ?? data.mine);
+		const q = [seen && 'list=seen', kind && `kind=${kind}`, mine && 'mine=1']
+			.filter(Boolean)
+			.join('&');
 		return q ? `/?${q}` : '/';
 	}
+	const lists = [
+		{ seen: false, label: 'Watchlist' },
+		{ seen: true, label: 'Seen' }
+	];
 	const kinds = [
 		{ kind: null, label: 'All' },
 		{ kind: 'movie', label: 'Films' },
@@ -21,11 +28,19 @@
 </script>
 
 <svelte:head>
-	<title>Watchlist · Telly</title>
+	<title>{data.seen ? 'Seen' : 'Watchlist'} · Telly</title>
 </svelte:head>
 
 <main class="page">
-	<h1>Watchlist</h1>
+	<nav class="lists" aria-label="Lists" data-sveltekit-reset="false">
+		{#each lists as l (l.label)}
+			{#if l.seen === data.seen}
+				<h1>{l.label}</h1>
+			{:else}
+				<a href={href({ seen: l.seen })} data-sveltekit-replacestate>{l.label}</a>
+			{/if}
+		{/each}
+	</nav>
 
 	{#if data.upNext.length}
 		<section class="up-next" aria-labelledby="up-next">
@@ -53,7 +68,12 @@
 		</section>
 	{/if}
 
-	{#if !data.total}
+	{#if !data.total && data.seen}
+		<section class="card empty">
+			<p>Nothing seen yet.</p>
+			<p class="muted">Films go here when you mark them seen, shows once you're caught up.</p>
+		</section>
+	{:else if !data.total}
 		<section class="card empty">
 			<p>Nothing here yet.</p>
 			<p class="muted">Search for films and shows, and add them with <strong>+</strong>.</p>
@@ -69,7 +89,7 @@
 				>
 			{/each}
 		</nav>
-		{#if data.hasServices}
+		{#if data.hasServices && !data.seen}
 			<div class="chips" data-sveltekit-reset="false">
 				<a
 					class="chip"
@@ -108,7 +128,7 @@
 			<p class="muted">Nothing matches.</p>
 		{/if}
 
-		{#if !data.hasServices}
+		{#if !data.hasServices && !data.seen}
 			<p class="note">
 				<a href="/services">Pick your streaming services</a> to see what you can watch for free.
 			</p>
@@ -117,6 +137,18 @@
 </main>
 
 <style>
+	/* Watchlist and Seen: this one's the heading, the other dimmed beside it. */
+	.lists {
+		display: flex;
+		align-items: baseline;
+		gap: 20px;
+	}
+	.lists a {
+		font: 800 46px/0.95 var(--display);
+		text-transform: uppercase;
+		text-decoration: none;
+		opacity: 0.35;
+	}
 	.up-next {
 		display: flex;
 		flex-direction: column;

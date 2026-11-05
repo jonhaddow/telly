@@ -5,10 +5,12 @@ import { tmdb } from './tmdb.ts';
 import { fakeFetch } from './fake-apis.ts';
 import {
 	addToWatchlist,
+	isSeen,
 	onWatchlist,
 	refreshListed,
 	removeFromWatchlist,
 	services,
+	setSeen,
 	setServices,
 	watchlistRows
 } from './watchlist.ts';
@@ -50,6 +52,37 @@ describe('watchlist', () => {
 		const moved = { ...film, providers: { ...film.providers, stream: [], free: [] } };
 		expect((await refreshListed(db, moved))?.watchableOn).toEqual([]);
 		expect((await watchlistRows(db))[0].watchableOn).toEqual([]);
+	});
+});
+
+describe('seen', () => {
+	const row = {
+		kind: 'tv' as const,
+		seenAt: null,
+		watchedAt: '2026-11-01',
+		nextSeason: null,
+		nextAirDate: null
+	};
+
+	it('is a show watched up to its latest episode out', () => {
+		expect(isSeen(row, '2026-11-05')).toBe(true);
+		// Next one announced but not out yet, or no date.
+		expect(isSeen({ ...row, nextSeason: 2, nextAirDate: '2026-12-01' }, '2026-11-05')).toBe(true);
+		expect(isSeen({ ...row, nextSeason: 2 }, '2026-11-05')).toBe(true);
+		// Next one out, or none watched.
+		expect(isSeen({ ...row, nextSeason: 2, nextAirDate: '2026-11-05' }, '2026-11-05')).toBe(false);
+		expect(isSeen({ ...row, watchedAt: null }, '2026-11-05')).toBe(false);
+	});
+
+	it('marks a film seen, listing it, and back to the watchlist', async () => {
+		const db = await setup();
+		const film = (await api.title('movie', 1001))!;
+		await setSeen(db, film, true, 1, new Date('2026-11-02'));
+		const [r] = await watchlistRows(db);
+		expect([r.name, r.seenAt]).toEqual(['The Long Light', '2026-11-02T00:00:00.000Z']);
+		expect(isSeen(r, '2026-11-05')).toBe(true);
+		await setSeen(db, film, false, 1);
+		expect(isSeen((await watchlistRows(db))[0], '2026-11-05')).toBe(false);
 	});
 });
 

@@ -1,0 +1,1 @@
+ALTER TABLE `watchlist` ADD `seen_at` text;

@@ -58,13 +58,35 @@
 		</div>
 	</header>
 
-	<form method="POST" action={data.listed ? '?/remove' : '?/add'} use:enhance={stay}>
-		<input type="hidden" name="kind" value={t.kind} />
-		<input type="hidden" name="id" value={t.id} />
-		<button class="listed" class:on={data.listed}>
-			{data.listed ? '✓ On the watchlist' : '+ Add to watchlist'}
-		</button>
-	</form>
+	<div class="actions">
+		{#if data.seen && t.kind === 'movie'}
+			<!-- Seen by mistake: back to the watchlist. -->
+			<form method="POST" action="?/seen" use:enhance={stay}>
+				<input type="hidden" name="kind" value={t.kind} />
+				<input type="hidden" name="id" value={t.id} />
+				<button class="listed on">✓ Seen</button>
+			</form>
+		{:else}
+			<form method="POST" action={data.listed ? '?/remove' : '?/add'} use:enhance={stay}>
+				<input type="hidden" name="kind" value={t.kind} />
+				<input type="hidden" name="id" value={t.id} />
+				<button class="listed" class:on={data.listed}>
+					{#if data.seen}✓ Seen
+					{:else if t.kind === 'movie'}{data.listed ? '✓ Watchlist' : '+ Watchlist'}
+					{:else}{data.listed ? '✓ On the watchlist' : '+ Add to watchlist'}
+					{/if}
+				</button>
+			</form>
+			{#if t.kind === 'movie'}
+				<form method="POST" action="?/seen" use:enhance={stay}>
+					<input type="hidden" name="kind" value={t.kind} />
+					<input type="hidden" name="id" value={t.id} />
+					<input type="hidden" name="seen" value="1" />
+					<button class="listed on">Seen it</button>
+				</form>
+			{/if}
+		{/if}
+	</div>
 
 	{#if t.imdbId}
 		<section class="ratings" aria-label="Ratings">
@@ -174,6 +196,13 @@
 		font-size: 12px;
 		font-weight: 800;
 		line-height: 18px;
+	}
+	.actions {
+		display: flex;
+		gap: 10px;
+	}
+	.actions form {
+		flex: 1;
 	}
 	.listed {
 		width: 100%;

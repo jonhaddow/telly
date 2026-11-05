@@ -22,8 +22,8 @@ test('pick services, add from search and a title page, filter, remove', async ({
 	await open(page, '/movie/1001');
 	await expect(page.getByText('On Netflix')).toBeVisible();
 	await expect(page.getByText('Rent or buy')).toBeVisible();
-	await page.getByRole('button', { name: '+ Add to watchlist' }).click();
-	await expect(page.getByRole('button', { name: '✓ On the watchlist' })).toBeVisible();
+	await page.getByRole('button', { name: '+ Watchlist' }).click();
+	await expect(page.getByRole('button', { name: '✓ Watchlist' })).toBeVisible();
 
 	await open(page, '/');
 	const grid = page.getByRole('list').last();
@@ -38,6 +38,24 @@ test('pick services, add from search and a title page, filter, remove', async ({
 
 	// Remove it again.
 	await grid.getByRole('link', { name: /The Long Light/ }).click();
-	await page.getByRole('button', { name: '✓ On the watchlist' }).click();
-	await expect(page.getByRole('button', { name: '+ Add to watchlist' })).toBeVisible();
+	await page.getByRole('button', { name: '✓ Watchlist' }).click();
+	await expect(page.getByRole('button', { name: '+ Watchlist' })).toBeVisible();
+});
+
+test('mark a film seen, find it on Seen, and put it back', async ({ page }) => {
+	await open(page, '/movie/1001');
+	await page.getByRole('button', { name: 'Seen it' }).click();
+	await expect(page.getByRole('button', { name: '✓ Seen' })).toBeVisible();
+
+	await open(page, '/');
+	await expect(page.getByRole('link', { name: 'The Long Light' })).toHaveCount(0);
+	await page.getByRole('link', { name: 'Seen' }).click();
+	await expect(page.getByRole('heading', { name: 'Seen' })).toBeVisible();
+	await page.getByRole('link', { name: /The Long Light/ }).click();
+
+	// Seen by mistake: back to the watchlist.
+	await page.getByRole('button', { name: '✓ Seen' }).click();
+	await expect(page.getByRole('button', { name: '✓ Watchlist' })).toBeVisible();
+	await page.getByRole('button', { name: '✓ Watchlist' }).click();
+	await expect(page.getByRole('button', { name: '+ Watchlist' })).toBeVisible();
 });

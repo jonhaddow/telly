@@ -127,4 +127,19 @@ describe('checkTitles', () => {
 			['Harbour Lights', '3x2', [38]]
 		]);
 	});
+
+	it('leaves seen films alone', async () => {
+		const db = await testDb();
+		await db.insert(user).values({ email: 'a@example.com', name: 'A' });
+		await db.insert(watchlist).values({
+			kind: 'movie',
+			tmdbId: 1001,
+			name: 'Old',
+			watchableOn: [],
+			addedAt: '2026-11-01',
+			seenAt: '2026-11-02'
+		});
+		await checkTitles(db, api, TODAY);
+		expect((await db.select().from(watchlist))[0].checkedAt).toBeNull();
+	});
 });

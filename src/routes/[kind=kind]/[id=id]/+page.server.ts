@@ -4,7 +4,7 @@ import { apis } from '#lib/server/apis.ts';
 import { episodeActions } from '#lib/server/episode-actions.ts';
 import { updateProgress, watchedEpisodes } from '#lib/server/episodes.ts';
 import { ratingsFor } from '#lib/server/omdb.ts';
-import { refreshListed, services } from '#lib/server/watchlist.ts';
+import { isSeen, refreshListed, services } from '#lib/server/watchlist.ts';
 import { watchlistActions } from '#lib/server/watchlist-actions.ts';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -35,6 +35,13 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	return {
 		title,
 		listed: !!row,
+		// With the next episode just worked out, if it was.
+		seen:
+			!!row &&
+			isSeen(
+				{ ...row, nextSeason: next?.season ?? null, nextAirDate: next?.airDate ?? null },
+				today()
+			),
 		ours: ours.map((s) => s.id),
 		// Watched episodes in each season.
 		watchedBySeason: Object.fromEntries(

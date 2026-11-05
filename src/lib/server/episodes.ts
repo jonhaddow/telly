@@ -101,7 +101,10 @@ export async function updateProgress(
 			nextName: episode?.name ?? null,
 			nextAirDate: episode?.airDate ?? null,
 			nextStill: episode?.still ?? null,
-			...(tickedBy !== undefined && { watchedAt: now.toISOString() })
+			// Unticked them all: not being watched (nor seen) any more.
+			...(tickedBy !== undefined
+				? { watchedAt: now.toISOString() }
+				: !watched.length && { watchedAt: null })
 		})
 		.where(and(eq(watchlist.kind, 'tv'), eq(watchlist.tmdbId, show.id)));
 	return episode;

@@ -41,8 +41,13 @@ test('tick episodes: a season, up next on the show and the watchlist', async ({ 
 	await open(page, '/tv/2001');
 	await expect(page.getByText(/S3 E3 is out /)).toBeVisible();
 
-	// Off the watchlist again (for the other tests), and it stays off.
-	await page.getByRole('button', { name: '✓ On the watchlist' }).click();
+	// Caught up, so it's seen.
+	await open(page, '/?list=seen');
+	await expect(page.getByRole('link', { name: /Harbour Lights/ })).toBeVisible();
+
+	// Off the list again (for the other tests), and it stays off.
+	await open(page, '/tv/2001');
+	await page.getByRole('button', { name: '✓ Seen' }).click();
 	await expect(page.getByRole('button', { name: '+ Add to watchlist' })).toBeVisible();
 	await open(page, '/tv/2001');
 	await expect(page.getByRole('button', { name: '+ Add to watchlist' })).toBeVisible();
