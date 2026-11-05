@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { checkTitles, news } from './alerts.ts';
+import { checkTitles, combine, news } from './alerts.ts';
 import { user, watchlist, type WatchlistRow } from './db/schema.ts';
 import { fakeFetch } from './fake-apis.ts';
 import { testDb } from './test-db.ts';
@@ -65,6 +65,9 @@ describe('news', () => {
 		expect(news(row({}), show(episode(2, 4, '2026-11-04')), ours, TODAY)).toEqual([]);
 		const [n] = news(row({}), show(episode(3, 1, '2026-11-05')), ours, TODAY);
 		expect(n.title).toBe('Show: season 3 is out');
+		// All of it at once.
+		const [all] = news(row({}), show(episode(3, 8, '2026-11-05')), ours, TODAY);
+		expect(all.title).toBe('Show: season 3 is out');
 	});
 
 	it('ignores old episodes, and anything on the first check', () => {
@@ -78,6 +81,19 @@ describe('news', () => {
 		const t = show(null, [8, 9]);
 		expect(news(row({}), t, ours, TODAY).map((n) => n.title)).toEqual(['Show is on Netflix']);
 		expect(news(row({ watchableOn: [8] }), t, ours, TODAY)).toEqual([]);
+	});
+});
+
+describe('combine', () => {
+	it('sends one as it is, and several as one', () => {
+		const n = (title: string) => ({ title, body: '', url: '/x', badge: 0 });
+		expect(combine([])).toBeNull();
+		expect(combine([n('A')])).toEqual(n('A'));
+		expect(combine([n('A'), n('B')])).toMatchObject({
+			title: '2 updates',
+			body: 'A · B',
+			url: '/'
+		});
 	});
 });
 

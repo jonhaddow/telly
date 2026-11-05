@@ -14,7 +14,7 @@ import { services } from './watchlist.ts';
 import { episodeCode, titlePath, watchableOn, type Title } from '../titles.ts';
 
 /** Titles a run: each is one or two TMDB calls. */
-export const PER_RUN = 12;
+const PER_RUN = 12;
 
 /** Episodes older than this when first seen aren't news (a missed check, say). */
 const NEWS_DAYS = 3;
@@ -28,13 +28,14 @@ export function news(
 	ours: { id: number; name: string }[],
 	today: string
 ): PushPayload[] {
+	// The first check only takes note.
+	if (!row.checkedAt) return [];
 	const notices: PushPayload[] = [];
 	const url = titlePath(t);
-	// The first check only takes note.
-	if (!row.checkedAt) return notices;
 
 	const before = new Set(row.watchableOn);
-	const arrived = ours.filter((s) => watchableOn(t.providers).includes(s.id) && !before.has(s.id));
+	const after = new Set(watchableOn(t.providers));
+	const arrived = ours.filter((s) => after.has(s.id) && !before.has(s.id));
 	if (arrived.length) {
 		notices.push({
 			title: `${t.name} is on ${arrived.map((s) => s.name).join(' and ')}`,
@@ -49,7 +50,9 @@ export function news(
 	const key = airedKey(t);
 	const fresh = latest?.airDate && latest.airDate >= addDays(today, -NEWS_DAYS);
 	if (latest && key !== row.latestAired && fresh) {
-		// Watching it: every episode. Not yet: only a season's first.
+		// Watching it: every episode. Not yet: only a new season, even if it all
+		// came out at once (latest 3x8 after 2x10).
+		const seenSeason = Number(row.latestAired?.split('x')[0] ?? 0);
 		if (row.watchedAt) {
 			notices.push({
 				title: `New ${t.name}`,
@@ -58,7 +61,7 @@ export function news(
 				badge: 0,
 				tag: `ep-${t.id}`
 			});
-		} else if (latest.number === 1) {
+		} else if (latest.season > seenSeason) {
 			notices.push({
 				title: `${t.name}: season ${latest.season} is out`,
 				body: latest.name,
@@ -71,13 +74,29 @@ export function news(
 	return notices;
 }
 
+/**
+ * One notification for a run's notices: each push is an outbound request, and a
+ * run has 50 for everything. Several become "3 updates", listing them.
+ */
+export function combine(notices: PushPayload[]): PushPayload | null {
+	if (notices.length <= 1) return notices[0] ?? null;
+	return {
+		title: `${notices.length} updates`,
+		body: notices.map((n) => n.title).join(' · '),
+		url: '/',
+		badge: 0,
+		tag: 'updates'
+	};
+}
+
 /** Checks the next few titles; returns the notices to send. */
 export async function checkTitles(
 	db: DB,
 	tmdb: Tmdb,
 	today: string,
-	{ now = new Date(), limit = PER_RUN } = {}
+	{ limit = PER_RUN } = {}
 ): Promise<PushPayload[]> {
+	const now = new Date();
 	const [rows, ours] = await Promise.all([
 		db
 			.select()
@@ -95,7 +114,10 @@ export async function checkTitles(
 				return null;
 			});
 			if (t && row.kind === 'tv' && row.watchedAt) {
-				await updateProgress(db, tmdb, t);
+				// Not fatal: the next check will try again.
+				await updateProgress(db, tmdb, t).catch((e: unknown) =>
+					console.error('Progress', row.tmdbId, e)
+				);
 			}
 			await db
 				.update(watchlist)

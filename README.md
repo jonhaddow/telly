@@ -20,6 +20,6 @@ Tests: `npm test` (unit), `npm run test:e2e` (Playwright), `npm run check`, `npm
 
 ## Deploy
 
-Secrets: `GOOGLE_CLIENT_SECRET`, `TMDB_TOKEN` (TMDB's API Read Access Token), `OMDB_KEY`, `VAPID_PRIVATE_KEY` and `CRON_SECRET` (any long random string; the hourly check sends it to `/check`) (`wrangler secret put`).
+Secrets: `GOOGLE_CLIENT_SECRET`, `TMDB_TOKEN` (TMDB's API Read Access Token), `OMDB_KEY`, `VAPID_PRIVATE_KEY` and `CRON_SECRET` (`wrangler secret put`). `CRON_SECRET` is any long random string: the hourly check sends it to `/check`.
 
 Pushing to `main` deploys through Cloudflare Workers Builds, whose deploy command `npm run deploy:ci` applies D1 migrations first. Back up the data with `npx wrangler d1 export telly --remote --output telly.sql`.
