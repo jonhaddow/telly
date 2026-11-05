@@ -126,6 +126,12 @@ describe('checkTitles', () => {
 			['The Long Light', null, [8]],
 			['Harbour Lights', '3x2', [38]]
 		]);
+
+		// Both checked just now: nothing's due until tomorrow.
+		await db.update(watchlist).set({ name: 'Unchanged' });
+		await checkTitles(db, api, TODAY);
+		const after = await db.select().from(watchlist);
+		expect(after.map((r) => r.name)).toEqual(['Unchanged', 'Unchanged']);
 	});
 
 	it('leaves seen films alone', async () => {

@@ -1,9 +1,10 @@
 // The hourly check (worker/entry.js → /check): looks at the listed titles (not
-// seen films) checked longest ago on TMDB, keeps their copies current, and says
+// seen films) not checked for a day, longest ago first, on TMDB, keeps their copies current, and says
 // what's new: an episode of a show being watched, a new season of one that isn't
 // yet, or a title arriving on one of our services. A few titles a run, so each
-// stays within the free plan's CPU and 50 outbound requests.
-import { asc, eq, and, isNull, sql } from 'drizzle-orm';
+// stays within the free plan's CPU and 50 outbound requests: a long list takes
+// a few runs to get round.
+import { asc, eq, and, isNull, lt, or, sql } from 'drizzle-orm';
 import { addDays } from '../dates.ts';
 import { watchlist, type WatchlistRow } from './db/schema.ts';
 import type { DB } from './db/index.ts';
@@ -15,6 +16,9 @@ import { episodeCode, titlePath, watchableOn, type Title } from '../titles.ts';
 
 /** Titles a run: each is one or two TMDB calls. */
 const PER_RUN = 12;
+
+/** A title is checked once a day: 23 hours, so its hourly slot doesn't drift later. */
+const RECHECK_HOURS = 23;
 
 /** Episodes older than this when first seen aren't news (a missed check, say). */
 const NEWS_DAYS = 3;
@@ -89,7 +93,7 @@ export function combine(notices: PushPayload[]): PushPayload | null {
 	};
 }
 
-/** Checks the next few titles; returns the notices to send. */
+/** Checks the next few titles due; returns the notices to send. */
 export async function checkTitles(
 	db: DB,
 	tmdb: Tmdb,
@@ -97,12 +101,15 @@ export async function checkTitles(
 	{ limit = PER_RUN } = {}
 ): Promise<PushPayload[]> {
 	const now = new Date();
+	const due = new Date(now.getTime() - RECHECK_HOURS * 3600_000).toISOString();
 	const [rows, ours] = await Promise.all([
 		db
 			.select()
 			.from(watchlist)
 			// Not seen films: nothing new to say about them.
-			.where(isNull(watchlist.seenAt))
+			.where(
+				and(isNull(watchlist.seenAt), or(isNull(watchlist.checkedAt), lt(watchlist.checkedAt, due)))
+			)
 			// Never checked first, then the longest ago.
 			.orderBy(sql`${watchlist.checkedAt} IS NOT NULL`, asc(watchlist.checkedAt))
 			.limit(limit),
