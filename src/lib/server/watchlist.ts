@@ -32,6 +32,10 @@ export async function addToWatchlist(db: DB, t: Title, userId: number, now = new
 		.onConflictDoNothing();
 }
 
+/** A show's next episode is out (so it's up next). */
+export const nextOut = (row: Pick<WatchlistRow, 'nextSeason' | 'nextAirDate'>, today: string) =>
+	!!row.nextSeason && !!row.nextAirDate && row.nextAirDate <= today;
+
 /**
  * Seen: a film marked seen, or a show ticked up to its latest aired episode (its
  * next one isn't out). A new episode puts the show back on the watchlist.
@@ -41,7 +45,7 @@ export function isSeen(
 	today: string
 ) {
 	if (row.kind === 'movie') return !!row.seenAt;
-	return !!row.watchedAt && !(row.nextSeason && row.nextAirDate && row.nextAirDate <= today);
+	return !!row.watchedAt && !nextOut(row, today);
 }
 
 /** Marks a film seen (listing it if need be), or back to the watchlist. */

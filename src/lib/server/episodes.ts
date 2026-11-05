@@ -93,6 +93,8 @@ export async function updateProgress(
 		? ((await tmdb.season(show.id, next.season))?.find((e) => e.number === next.episode) ?? null)
 		: null;
 	if (tickedBy !== undefined) await addToWatchlist(db, show, tickedBy, now);
+	// Just ticked: latest first in Up next. Unticked them all: not being watched (nor seen).
+	const watchedAt = tickedBy !== undefined ? now.toISOString() : watched.length ? undefined : null;
 	await db
 		.update(watchlist)
 		.set({
@@ -101,10 +103,7 @@ export async function updateProgress(
 			nextName: episode?.name ?? null,
 			nextAirDate: episode?.airDate ?? null,
 			nextStill: episode?.still ?? null,
-			// Unticked them all: not being watched (nor seen) any more.
-			...(tickedBy !== undefined
-				? { watchedAt: now.toISOString() }
-				: !watched.length && { watchedAt: null })
+			...(watchedAt !== undefined && { watchedAt })
 		})
 		.where(and(eq(watchlist.kind, 'tv'), eq(watchlist.tmdbId, show.id)));
 	return episode;

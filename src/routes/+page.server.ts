@@ -1,6 +1,6 @@
 import { today } from '#lib/dates.ts';
 import { episodeActions } from '#lib/server/episode-actions.ts';
-import { isSeen, services, watchlistRows } from '#lib/server/watchlist.ts';
+import { isSeen, nextOut, services, watchlistRows } from '#lib/server/watchlist.ts';
 import { watchlistActions } from '#lib/server/watchlist-actions.ts';
 import { KINDS } from '#lib/titles.ts';
 import type { Actions, PageServerLoad } from './$types';
@@ -24,23 +24,21 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		years: r.years,
 		poster: r.poster,
 		// Ours that show it, most popular first.
-		on: seen ? [] : ours.filter((s) => r.watchableOn.includes(s.id))
+		on: ours.filter((s) => r.watchableOn.includes(s.id))
 	}));
-	// Shows with an episode out that's next to watch, latest watched first.
-	const upNext = seen
-		? []
-		: rows
-				.filter((r) => r.nextSeason && r.nextEpisode && r.nextAirDate && r.nextAirDate <= day)
-				.sort((a, b) => (b.watchedAt ?? '').localeCompare(a.watchedAt ?? ''))
-				.map((r) => ({
-					id: r.tmdbId,
-					name: r.name,
-					poster: r.poster,
-					still: r.nextStill,
-					season: r.nextSeason!,
-					number: r.nextEpisode!,
-					episodeName: r.nextName ?? ''
-				}));
+	// Shows with an episode out that's next to watch, latest watched first (none seen).
+	const upNext = rows
+		.filter((r) => r.nextEpisode && nextOut(r, day))
+		.sort((a, b) => (b.watchedAt ?? '').localeCompare(a.watchedAt ?? ''))
+		.map((r) => ({
+			id: r.tmdbId,
+			name: r.name,
+			poster: r.poster,
+			still: r.nextStill,
+			season: r.nextSeason!,
+			number: r.nextEpisode!,
+			episodeName: r.nextName ?? ''
+		}));
 	return {
 		seen,
 		upNext,

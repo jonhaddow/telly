@@ -20,6 +20,15 @@
 		].filter(Boolean)
 	);
 
+	// Films share the row with Seen it, so their labels are short.
+	const main = $derived(
+		data.seen
+			? { action: t.kind === 'movie' ? '?/seen' : '?/remove', label: '✓ Seen' }
+			: data.listed
+				? { action: '?/remove', label: t.kind === 'movie' ? '✓ Watchlist' : '✓ On the watchlist' }
+				: { action: '?/add', label: t.kind === 'movie' ? '+ Watchlist' : '+ Add to watchlist' }
+	);
+
 	// Back to wherever you came from in the app (search results keep their words);
 	// opened from a link or a notification, to search.
 	let fromApp = false;
@@ -59,32 +68,19 @@
 	</header>
 
 	<div class="actions">
-		{#if data.seen && t.kind === 'movie'}
-			<!-- Seen by mistake: back to the watchlist. -->
+		<!-- A seen film goes back to the watchlist (seen by mistake); otherwise add or remove. -->
+		<form method="POST" action={main.action} use:enhance={stay}>
+			<input type="hidden" name="kind" value={t.kind} />
+			<input type="hidden" name="id" value={t.id} />
+			<button class="listed" class:on={data.listed}>{main.label}</button>
+		</form>
+		{#if t.kind === 'movie' && !data.seen}
 			<form method="POST" action="?/seen" use:enhance={stay}>
 				<input type="hidden" name="kind" value={t.kind} />
 				<input type="hidden" name="id" value={t.id} />
-				<button class="listed on">✓ Seen</button>
+				<input type="hidden" name="seen" value="1" />
+				<button class="listed on">Seen it</button>
 			</form>
-		{:else}
-			<form method="POST" action={data.listed ? '?/remove' : '?/add'} use:enhance={stay}>
-				<input type="hidden" name="kind" value={t.kind} />
-				<input type="hidden" name="id" value={t.id} />
-				<button class="listed" class:on={data.listed}>
-					{#if data.seen}✓ Seen
-					{:else if t.kind === 'movie'}{data.listed ? '✓ Watchlist' : '+ Watchlist'}
-					{:else}{data.listed ? '✓ On the watchlist' : '+ Add to watchlist'}
-					{/if}
-				</button>
-			</form>
-			{#if t.kind === 'movie'}
-				<form method="POST" action="?/seen" use:enhance={stay}>
-					<input type="hidden" name="kind" value={t.kind} />
-					<input type="hidden" name="id" value={t.id} />
-					<input type="hidden" name="seen" value="1" />
-					<button class="listed on">Seen it</button>
-				</form>
-			{/if}
 		{/if}
 	</div>
 
