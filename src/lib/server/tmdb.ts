@@ -4,6 +4,7 @@
 // the credit on the settings page.
 import {
 	KINDS,
+	type Episode,
 	type Kind,
 	type Provider,
 	type Providers,
@@ -14,6 +15,21 @@ import {
 const BASE = 'https://api.themoviedb.org/3';
 
 type Genre = { id: number; name: string };
+type RawSeason = {
+	season_number: number;
+	name?: string;
+	episode_count?: number;
+	air_date?: string | null;
+};
+export type RawEpisode = {
+	season_number: number;
+	episode_number: number;
+	name?: string;
+	air_date?: string | null;
+	runtime?: number | null;
+	still_path?: string | null;
+	overview?: string;
+};
 type RawProvider = {
 	provider_id: number;
 	provider_name: string;
@@ -52,8 +68,7 @@ export type RawTitle = RawSummary & {
 	last_episode_to_air?: { runtime?: number | null } | null;
 	status?: string;
 	last_air_date?: string | null;
-	number_of_seasons?: number;
-	number_of_episodes?: number;
+	seasons?: RawSeason[];
 	imdb_id?: string | null;
 	external_ids?: { imdb_id?: string | null };
 	videos?: { results: Video[] };
@@ -141,6 +156,28 @@ export function toProviders(raw: RawProviders | undefined): Providers {
 /** Amazon and Apple's add-on channels: the service itself is listed too. */
 const isChannel = (name: string) => name.endsWith(' Channel');
 
+/** Rent-or-buy shops: no one subscribes to these. */
+const SHOPS = new Set([
+	'Amazon Video',
+	'Apple TV Store',
+	'Google Play Movies',
+	'Microsoft Store',
+	'Rakuten TV',
+	'Sky Store',
+	'YouTube',
+	'Chili'
+]);
+
+export const toEpisode = (e: RawEpisode): Episode => ({
+	season: e.season_number,
+	number: e.episode_number,
+	name: e.name || `Episode ${e.episode_number}`,
+	airDate: e.air_date || null,
+	runtime: e.runtime || null,
+	still: e.still_path ?? null,
+	overview: e.overview ?? ''
+});
+
 export function toTitle(kind: Kind, t: RawTitle): Title {
 	return {
 		...toSummary(kind, t),
@@ -153,8 +190,15 @@ export function toTitle(kind: Kind, t: RawTitle): Title {
 				? t.runtime
 				: (t.episode_run_time?.[0] ?? t.last_episode_to_air?.runtime)) || null,
 		certificate: certificate(kind, t),
-		seasons: kind === 'tv' ? (t.number_of_seasons ?? null) : null,
-		episodes: kind === 'tv' ? (t.number_of_episodes ?? null) : null,
+		seasons: (t.seasons ?? [])
+			.filter((s) => s.season_number > 0 && s.episode_count)
+			.sort((a, b) => a.season_number - b.season_number)
+			.map((s) => ({
+				number: s.season_number,
+				name: s.name || `Season ${s.season_number}`,
+				episodes: s.episode_count ?? 0,
+				airDate: s.air_date || null
+			})),
 		imdbId: (kind === 'movie' ? t.imdb_id : t.external_ids?.imdb_id) || null,
 		trailer: pickTrailer(t.videos?.results ?? []),
 		providers: toProviders(t['watch/providers']?.results?.GB)
@@ -202,7 +246,13 @@ export function tmdb(token: string, fetcher: typeof fetch = fetch) {
 			return data && toTitle(kind, data);
 		},
 
-		/** UK streaming services, most popular first, without add-on channels. */
+		/** A season's episodes in order, or null if there's no such season. */
+		async season(showId: number, season: number): Promise<Episode[] | null> {
+			const data = await get<{ episodes?: RawEpisode[] }>(`/tv/${showId}/season/${season}`);
+			return data && (data.episodes ?? []).map(toEpisode);
+		},
+
+		/** UK streaming services, most popular first, without add-on channels or shops. */
 		async services(): Promise<Provider[]> {
 			const lists = await Promise.all(
 				KINDS.map((k) =>
@@ -210,7 +260,9 @@ export function tmdb(token: string, fetcher: typeof fetch = fetch) {
 				)
 			);
 			return ranked(
-				lists.flatMap((l) => l?.results ?? []).filter((p) => !isChannel(p.provider_name)),
+				lists
+					.flatMap((l) => l?.results ?? [])
+					.filter((p) => !isChannel(p.provider_name) && !SHOPS.has(p.provider_name)),
 				(p) => p.display_priorities?.GB
 			);
 		}

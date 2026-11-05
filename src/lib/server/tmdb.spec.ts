@@ -55,13 +55,28 @@ describe('toTitle', () => {
 				genres: [],
 				runtime: null,
 				certificate: null,
-				seasons: null,
-				episodes: null,
+				seasons: [],
 				imdbId: null,
 				trailer: null,
 				providers: { link: null, stream: [], free: [], buy: [] }
 			});
 		}
+	});
+
+	it('lists seasons in order, without specials or empty ones', () => {
+		const show = toTitle('tv', {
+			id: 1,
+			seasons: [
+				{ season_number: 2, name: '', episode_count: 8, air_date: null },
+				{ season_number: 0, name: 'Specials', episode_count: 2 },
+				{ season_number: 3, name: 'Series 3', episode_count: 0 },
+				{ season_number: 1, name: 'Series 1', episode_count: 6, air_date: '2020-01-01' }
+			]
+		});
+		expect(show.seasons).toEqual([
+			{ number: 1, name: 'Series 1', episodes: 6, airDate: '2020-01-01' },
+			{ number: 2, name: 'Season 2', episodes: 8, airDate: null }
+		]);
 	});
 
 	it('reads the UK certificate and IMDb id for each kind', () => {
@@ -130,8 +145,8 @@ describe('toProviders', () => {
 });
 
 describe('services', () => {
-	it('lists UK services once each, without add-on channels', async () => {
+	it('lists UK services once each, without add-on channels or shops', async () => {
 		const names = (await tmdb('token', fakeFetch).services()).map((s) => s.name);
-		expect(names).toEqual(['Netflix', 'Amazon Prime Video', 'Apple TV Store', 'BBC iPlayer']);
+		expect(names).toEqual(['Netflix', 'Amazon Prime Video', 'BBC iPlayer']);
 	});
 });

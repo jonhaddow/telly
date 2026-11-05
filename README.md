@@ -1,6 +1,6 @@
 # Telly
 
-What to watch next, and where: a film and TV tracker as a phone web app for a household, at https://telly.app.haddow.me. A shared watchlist; where to watch each title, your services first; IMDb, Rotten Tomatoes and Metacritic scores and the trailer. Episode tracking and alerts are on the way (`docs/roadmap.md`).
+What to watch next, and where: a film and TV tracker as a phone web app for a household, at https://telly.app.haddow.me. A shared watchlist; where to watch each title, your services first; IMDb, Rotten Tomatoes and Metacritic scores and the trailer. Shared episode tracking with an Up next queue. Alerts are on the way (`docs/roadmap.md`).
 
 SvelteKit on Cloudflare Workers, with D1 (Drizzle). Film and TV data from [TMDB](https://www.themoviedb.org), scores from [OMDb](https://www.omdbapi.com). Sign-in is Google, for an allowlist in the `user` table.
 
