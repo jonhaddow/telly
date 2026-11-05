@@ -150,7 +150,7 @@
 	}
 	.poster {
 		box-shadow: 0 8px 24px rgb(0 0 0 / 0.25);
-		border-radius: 10px;
+		border-radius: 4px;
 	}
 	.heading {
 		display: flex;
@@ -159,8 +159,7 @@
 		min-width: 0;
 	}
 	h1 {
-		font-size: 26px;
-		line-height: 1.15;
+		font-size: 38px;
 	}
 	.facts,
 	.genres {
@@ -180,11 +179,13 @@
 		width: 100%;
 		min-height: 50px;
 		border: 0;
-		border-radius: 14px;
+		border-radius: var(--radius);
 		background: var(--accent);
 		color: var(--on-accent);
 		font-size: 16px;
 		font-weight: 800;
+		letter-spacing: 0.5px;
+		text-transform: uppercase;
 		cursor: pointer;
 		transition: opacity 0.1s;
 	}
@@ -207,7 +208,7 @@
 		align-items: baseline;
 		column-gap: 6px;
 		padding: 8px 14px;
-		border-radius: 14px;
+		border-radius: var(--radius);
 		background: var(--card);
 		box-shadow: var(--shadow);
 		text-decoration: none;
@@ -227,7 +228,7 @@
 		color: var(--muted);
 	}
 	.imdb strong {
-		color: light-dark(#8a6d00, #f5c518);
+		color: #f5c518;
 	}
 	.loading {
 		color: var(--muted);
@@ -256,7 +257,7 @@
 		align-items: center;
 		gap: 6px;
 		padding: 8px 14px 8px 10px;
-		border-radius: 999px;
+		border-radius: 4px;
 		background: var(--accent);
 		color: var(--on-accent);
 		font-weight: 800;

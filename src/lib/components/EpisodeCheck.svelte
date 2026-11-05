@@ -31,7 +31,7 @@
 	button {
 		width: 44px;
 		height: 44px;
-		border-radius: 50%;
+		border-radius: var(--radius);
 		border: 2px solid var(--field);
 		background: transparent;
 		color: var(--muted);

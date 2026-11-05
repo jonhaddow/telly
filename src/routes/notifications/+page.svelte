@@ -168,7 +168,7 @@
 	.note {
 		background: var(--note-bg);
 		color: var(--note-ink);
-		border-radius: 12px;
+		border-radius: var(--radius);
 		padding: 12px 14px;
 		font-size: 15px;
 	}

@@ -57,7 +57,7 @@
 		gap: 10px;
 		min-height: 52px;
 		padding: 6px 10px 6px 6px;
-		border-radius: 14px;
+		border-radius: var(--radius);
 		background: var(--card);
 		box-shadow: var(--shadow);
 		font-size: 14px;

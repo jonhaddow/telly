@@ -3,8 +3,9 @@
 	import { beforeNavigate, invalidateAll, onNavigate } from '$app/navigation';
 	import { page, updated } from '$app/state';
 	// Served with the app (not Google Fonts): no extra connections before text shows.
-	import '@fontsource-variable/figtree';
-	import font from '@fontsource-variable/figtree/files/figtree-latin-wght-normal.woff2?url';
+	import '@fontsource-variable/instrument-sans';
+	import font from '@fontsource-variable/instrument-sans/files/instrument-sans-latin-wght-normal.woff2?url';
+	import display from '@fontsource-variable/big-shoulders-display/files/big-shoulders-display-latin-wght-normal.woff2?url';
 	import './app.css';
 
 	let { data, children }: LayoutProps = $props();
@@ -49,6 +50,7 @@
 
 <svelte:head>
 	<link rel="preload" href={font} as="font" type="font/woff2" crossorigin="anonymous" />
+	<link rel="preload" href={display} as="font" type="font/woff2" crossorigin="anonymous" />
 </svelte:head>
 
 <svelte:document onvisibilitychange={onVisible} />
@@ -90,39 +92,48 @@
 {/if}
 
 <style>
-	/* A floating, frosted pill; the page scrolls under it. */
+	/* Flush along the bottom, frosted; the page scrolls under it. The tab you're
+	   on is lit in the accent, with a bar along its top edge. */
 	nav {
 		view-transition-name: tabs;
 		position: fixed;
-		left: 50%;
-		bottom: calc(12px + env(safe-area-inset-bottom));
-		translate: -50% 0;
-		width: min(calc(100% - 32px), 360px);
-		height: var(--tabs);
-		padding: 6px;
-		border-radius: 999px;
-		background: color-mix(in srgb, var(--card) 78%, transparent);
-		backdrop-filter: blur(20px) saturate(1.6);
-		-webkit-backdrop-filter: blur(20px) saturate(1.6);
-		border: 1px solid color-mix(in srgb, var(--ink) 8%, transparent);
-		box-shadow: 0 8px 28px rgb(0 0 0 / 0.12);
+		inset: auto 0 0;
+		height: calc(var(--tabs) + env(safe-area-inset-bottom));
+		padding-bottom: env(safe-area-inset-bottom);
+		background: color-mix(in srgb, var(--bg) 85%, transparent);
+		backdrop-filter: blur(20px) saturate(1.4);
+		-webkit-backdrop-filter: blur(20px) saturate(1.4);
+		border-top: 1px solid var(--line);
 		display: grid;
 		grid-template-columns: repeat(3, minmax(0, 1fr));
 	}
 	nav a {
+		position: relative;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		gap: 2px;
-		border-radius: 999px;
+		gap: 3px;
 		font-size: 11px;
 		font-weight: 700;
+		letter-spacing: 0.6px;
+		text-transform: uppercase;
 		color: var(--muted);
 		text-decoration: none;
-		transition:
-			background-color 0.2s,
-			color 0.2s;
+		transition: color 0.2s;
+	}
+	nav a::before {
+		content: '';
+		position: absolute;
+		top: -1px;
+		width: 32px;
+		height: 3px;
+		background: var(--accent);
+		scale: 0 1;
+		transition: scale 0.2s ease-out;
+	}
+	nav a.active::before {
+		scale: 1;
 	}
 	.icon {
 		position: relative;
@@ -139,6 +150,5 @@
 	}
 	nav a.active {
 		color: var(--accent);
-		background: color-mix(in srgb, var(--accent) 12%, transparent);
 	}
 </style>

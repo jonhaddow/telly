@@ -5,6 +5,8 @@
 @import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/utilities.css' layer(utilities);
 @import 'shadcn-svelte/tailwind.css';
+/* The headings' font. Imported here, not in +layout.svelte: the package has no types. */
+@import '@fontsource-variable/big-shoulders-display';
 
 /* The components' colour names, mapped onto the app's own. */
 @theme inline {
@@ -21,37 +23,32 @@
 
 @layer base {
 	:root {
-		/* Each colour is light-dark(light, dark), following the device. Warm
-		   paper by day, a dark room by night, with a tangerine accent. */
-		--bg: light-dark(#f5f3f0, #0e0e12);
-		--card: light-dark(#ffffff, #18181f);
-		--ink: light-dark(#17161c, #f1f0f5);
-		--accent: light-dark(#c8401b, #ff7a50);
+		/* Late-night TV guide: always dark, with a signal-yellow accent. Big
+		   condensed headings (--display) over a plain sans, and tight corners. */
+		--bg: #0b0b0d;
+		--card: #16161a;
+		--ink: #f2efe6;
+		--accent: #e4f542;
 		/* Text on an --accent background (primary buttons, chosen options). */
-		--on-accent: light-dark(#ffffff, #1d0b05);
-		--muted: light-dark(#6b6873, #9c99a6);
-		--line: light-dark(#e8e5e1, #27262f);
-		--field: light-dark(#cfcbc6, #3a3843);
-		--over: light-dark(#b42318, #ff8f80);
-		--good: light-dark(#2f7d4f, #6cc98f);
-		--note-bg: light-dark(#fcebe4, #2a1710);
-		--note-ink: light-dark(#9a3412, #ffb59b);
-		--alert-bg: light-dark(#fbe9e5, #3a1814);
-		--alert-ink: light-dark(#9f2118, #ffb4a8);
+		--on-accent: #0b0b0d;
+		--muted: #8f8c96;
+		--line: #26252c;
+		--field: #3b3a42;
+		--over: #ff6b5e;
+		--good: #7ddc9a;
+		--note-bg: #22250d;
+		--note-ink: #e4f542;
+		--alert-bg: #3a1512;
+		--alert-ink: #ffb0a6;
 		/* Posters with no image. */
-		--poster: light-dark(#e2ddd7, #24232c);
-		--radius: 18px;
-		/* The tab bar's height; it floats 12px up. */
-		--tabs: 64px;
-		--shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 6px 20px rgb(0 0 0 / 0.05);
-		color-scheme: light dark;
-	}
-
-	/* Shadows don't show on dark backgrounds; a faint edge separates cards instead. */
-	@media (prefers-color-scheme: dark) {
-		:root {
-			--shadow: 0 0 0 1px rgb(255 255 255 / 0.05);
-		}
+		--poster: #1f1e24;
+		--radius: 6px;
+		--display: 'Big Shoulders Display Variable', 'Arial Narrow', sans-serif;
+		/* The tab bar's height, above the iPhone's home bar. */
+		--tabs: 60px;
+		/* A faint edge separates cards on the dark background. */
+		--shadow: 0 0 0 1px rgb(255 255 255 / 0.06);
+		color-scheme: dark;
 	}
 
 	* {
@@ -62,7 +59,7 @@
 		margin: 0;
 		background: var(--bg);
 		color: var(--ink);
-		font-family: 'Figtree Variable', system-ui, sans-serif;
+		font-family: 'Instrument Sans Variable', system-ui, sans-serif;
 		font-variant-numeric: tabular-nums;
 		-webkit-font-smoothing: antialiased;
 		-webkit-tap-highlight-color: transparent;
@@ -85,7 +82,7 @@
 		margin: 0 auto;
 		/* Below the iPhone's status bar: the app runs full screen (viewport-fit=cover). */
 		padding: calc(28px + env(safe-area-inset-top)) 16px
-			calc(var(--tabs) + 44px + env(safe-area-inset-bottom));
+			calc(var(--tabs) + 32px + env(safe-area-inset-bottom));
 		display: flex;
 		flex-direction: column;
 		gap: 20px;
@@ -100,17 +97,22 @@
 		}
 	}
 
-	h1 {
+	h1,
+	h2 {
 		margin: 0;
-		font-size: 30px;
+		font-family: var(--display);
 		font-weight: 800;
-		letter-spacing: -0.5px;
+		text-transform: uppercase;
+		line-height: 0.95;
+	}
+
+	h1 {
+		font-size: 46px;
 	}
 
 	h2 {
-		margin: 0;
-		font-size: 17px;
-		font-weight: 800;
+		font-size: 22px;
+		letter-spacing: 0.5px;
 	}
 
 	p {
@@ -158,7 +160,7 @@
 	.field textarea {
 		min-height: 48px;
 		padding: 10px 14px;
-		border-radius: 12px;
+		border-radius: var(--radius);
 		border: 1.5px solid var(--field);
 		background: var(--card);
 		font-size: 17px;
@@ -173,7 +175,7 @@
 	.error {
 		background: var(--alert-bg);
 		color: var(--alert-ink);
-		border-radius: 12px;
+		border-radius: var(--radius);
 		padding: 12px 14px;
 		font-size: 15px;
 	}
@@ -196,7 +198,7 @@
 		grid-auto-flow: column;
 		gap: 4px;
 		padding: 3px;
-		border-radius: 16px;
+		border-radius: var(--radius);
 		background: var(--line);
 	}
 
@@ -208,7 +210,7 @@
 		gap: 6px;
 		min-height: 40px;
 		/* Inside the track's padding. */
-		border-radius: 13px;
+		border-radius: 4px;
 		font-weight: 600;
 		font-size: 15px;
 		color: var(--muted);
@@ -222,7 +224,7 @@
 		pointer-events: none;
 	}
 
-	/* The chosen one: green. */
+	/* The chosen one. */
 	.segments > [aria-current='page'],
 	.segments > :has(input:checked) {
 		background: var(--accent);
@@ -248,7 +250,7 @@
 		min-height: 44px;
 		padding: 0 16px;
 		border: 0;
-		border-radius: 22px;
+		border-radius: var(--radius);
 		background: var(--line);
 		color: var(--ink);
 		font-size: 15px;
@@ -289,7 +291,7 @@
 	.note {
 		background: var(--note-bg);
 		color: var(--note-ink);
-		border-radius: 12px;
+		border-radius: var(--radius);
 		padding: 12px 14px;
 		font-size: 15px;
 	}

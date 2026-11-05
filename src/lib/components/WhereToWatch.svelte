@@ -59,14 +59,16 @@
 	.yes {
 		background: var(--note-bg);
 		color: var(--note-ink);
-		border-radius: 12px;
+		border-radius: var(--radius);
 		padding: 10px 14px;
 		font-weight: 700;
 	}
 	h3 {
 		margin: 0 0 6px;
-		font-size: 13px;
+		font-size: 11px;
 		font-weight: 700;
+		letter-spacing: 0.8px;
+		text-transform: uppercase;
 	}
 	ul {
 		list-style: none;
@@ -81,7 +83,7 @@
 		align-items: center;
 		gap: 8px;
 		padding: 5px 12px 5px 5px;
-		border-radius: 12px;
+		border-radius: var(--radius);
 		background: var(--card);
 		box-shadow: var(--shadow);
 		font-size: 14px;

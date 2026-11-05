@@ -142,7 +142,7 @@
 		flex: none;
 		width: 96px;
 		aspect-ratio: 16 / 9;
-		border-radius: 8px;
+		border-radius: 3px;
 		overflow: hidden;
 		background: var(--poster);
 		display: flex;
@@ -209,7 +209,7 @@
 		bottom: 6px;
 		width: 28px;
 		height: 28px;
-		border-radius: 7px;
+		border-radius: 4px;
 		box-shadow: 0 2px 6px rgb(0 0 0 / 0.35);
 	}
 	.name {
