@@ -1,7 +1,7 @@
 // Episode tracking, shared by the household: each episode is watched or not.
 // Each show's next episode is worked out here and copied to its watchlist row,
 // so Up next loads without calling TMDB.
-import { and, eq, inArray } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { episodeWatch, watchlist } from './db/schema.ts';
 import type { DB } from './db/index.ts';
 import type { Tmdb } from './tmdb.ts';
@@ -35,11 +35,18 @@ export function nextAfter(seasons: Season[], watched: EpisodeRef[]): EpisodeRef 
 	return following ? { season: following.number, episode: 1 } : null;
 }
 
-/** D1 takes at most 100 bound values a query: 5 a row inserted, 1 an episode deleted. */
-const chunks = <T>(list: T[], size: number) =>
-	Array.from({ length: Math.ceil(list.length / size) }, (_, i) =>
-		list.slice(i * size, (i + 1) * size)
-	);
+/**
+ * Marks episodes watched in one statement, however many: they go in as one JSON
+ * value (D1 takes at most 100 bound values, and 50 queries a request).
+ */
+async function tick(db: DB, showId: number, episodes: EpisodeRef[], userId: number, at: string) {
+	await db.run(sql`
+		INSERT INTO episode_watch (show_id, season, episode, watched_by, watched_at)
+		SELECT ${showId}, json_extract(value, '$.season'), json_extract(value, '$.episode'), ${userId}, ${at}
+		FROM json_each(${JSON.stringify(episodes)})
+		WHERE true -- SQLite needs it before ON CONFLICT in an INSERT … SELECT
+		ON CONFLICT DO NOTHING`);
+}
 
 /** Marks episodes of one season watched, or not. */
 export async function setWatched(
@@ -51,28 +58,40 @@ export async function setWatched(
 	userId: number,
 	now = new Date()
 ) {
-	const at = now.toISOString();
-	const queries = watched
-		? chunks(episodes, 19).map((part) =>
-				db
-					.insert(episodeWatch)
-					.values(
-						part.map((episode) => ({ showId, season, episode, watchedBy: userId, watchedAt: at }))
-					)
-					.onConflictDoNothing()
-			)
-		: chunks(episodes, 90).map((part) =>
-				db
-					.delete(episodeWatch)
-					.where(
-						and(
-							eq(episodeWatch.showId, showId),
-							eq(episodeWatch.season, season),
-							inArray(episodeWatch.episode, part)
-						)
-					)
+	if (watched) {
+		const refs = episodes.map((episode) => ({ season, episode }));
+		await tick(db, showId, refs, userId, now.toISOString());
+	} else {
+		await db
+			.delete(episodeWatch)
+			.where(
+				and(
+					eq(episodeWatch.showId, showId),
+					eq(episodeWatch.season, season),
+					sql`${episodeWatch.episode} IN (SELECT value FROM json_each(${JSON.stringify(episodes)}))`
+				)
 			);
-	if (queries.length) await db.batch([queries[0], ...queries.slice(1)]);
+	}
+}
+
+/** Every episode out so far, from the show's seasons and its latest episode. */
+export function airedEpisodes(show: Title): EpisodeRef[] {
+	const latest = show.latest;
+	if (!latest) return [];
+	return show.seasons
+		.filter((s) => s.number <= latest.season)
+		.flatMap((s) =>
+			Array.from({ length: s.number === latest.season ? latest.number : s.episodes }, (_, i) => ({
+				season: s.number,
+				episode: i + 1
+			}))
+		);
+}
+
+/** Marks the whole show watched (what's out of it), putting it on the list. */
+export async function watchAll(db: DB, tmdb: Tmdb, show: Title, userId: number, now = new Date()) {
+	await tick(db, show.id, airedEpisodes(show), userId, now.toISOString());
+	return updateProgress(db, tmdb, show, { tickedBy: userId, now });
 }
 
 /**

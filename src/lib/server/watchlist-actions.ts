@@ -1,5 +1,6 @@
 import { fail, type RequestEvent } from '@sveltejs/kit';
 import { apis } from './apis.ts';
+import { watchAll } from './episodes.ts';
 import { addToWatchlist, removeFromWatchlist, setSeen } from './watchlist.ts';
 import { KINDS } from '../titles.ts';
 
@@ -19,14 +20,20 @@ export const watchlistActions = {
 		if (!title) return fail(404);
 		await addToWatchlist(locals.db, title, locals.user!.id);
 	},
-	/** Films: seen=1 marks it seen, otherwise back to the watchlist. */
+	/**
+	 * Films: seen=1 marks it seen, otherwise back to the watchlist. Shows: ticks
+	 * every episode out so far.
+	 */
 	seen: async ({ request, locals }: RequestEvent) => {
 		const form = await request.formData();
 		const t = target(form);
-		if (t?.kind !== 'movie') return fail(400);
-		const film = await (await apis()).tmdb.title('movie', t.id);
-		if (!film) return fail(404);
-		await setSeen(locals.db, film, form.get('seen') === '1', locals.user!.id);
+		if (!t) return fail(400);
+		const { tmdb } = await apis();
+		const title = await tmdb.title(t.kind, t.id);
+		if (!title) return fail(404);
+		const userId = locals.user!.id;
+		if (t.kind === 'tv') await watchAll(locals.db, tmdb, title, userId);
+		else await setSeen(locals.db, title, form.get('seen') === '1', userId);
 	},
 	remove: async ({ request, locals }: RequestEvent) => {
 		const t = target(await request.formData());

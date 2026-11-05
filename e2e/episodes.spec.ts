@@ -19,7 +19,7 @@ test('tick episodes: a season, up next on the show and the watchlist', async ({ 
 	// The show now has an episode up next, and is on the watchlist.
 	await page.getByRole('link', { name: 'Harbour Lights', exact: true }).click();
 	await expect(page.getByText('Up next · S2 E1')).toBeVisible();
-	await expect(page.getByRole('button', { name: '✓ On the watchlist' })).toBeVisible();
+	await expect(page.getByRole('button', { name: '✓ Watchlist' })).toBeVisible();
 	await page.getByRole('button', { name: 'Mark S2 E1 watched' }).click();
 	await expect(page.getByText('Up next · S2 E2')).toBeVisible();
 
@@ -48,7 +48,31 @@ test('tick episodes: a season, up next on the show and the watchlist', async ({ 
 	// Off the list again (for the other tests), and it stays off.
 	await open(page, '/tv/2001');
 	await page.getByRole('button', { name: '✓ Seen' }).click();
-	await expect(page.getByRole('button', { name: '+ Add to watchlist' })).toBeVisible();
+	await expect(page.getByRole('button', { name: '+ Watchlist' })).toBeVisible();
 	await open(page, '/tv/2001');
-	await expect(page.getByRole('button', { name: '+ Add to watchlist' })).toBeVisible();
+	await expect(page.getByRole('button', { name: '+ Watchlist' })).toBeVisible();
+});
+
+test('mark a whole show seen', async ({ page }) => {
+	await open(page, '/tv/2001');
+	await page.getByRole('button', { name: 'Seen it' }).click();
+	await expect(page.getByRole('button', { name: '✓ Seen' })).toBeVisible();
+	await open(page, '/tv/2001/season/1');
+	await expect(page.getByText('3 of 3 watched')).toBeVisible();
+
+	// Off the list again, episodes unticked (for the other tests).
+	for (const season of [1, 2]) {
+		await open(page, `/tv/2001/season/${season}`);
+		await page.getByRole('button', { name: '✓ Season watched' }).click();
+		await expect(page.getByText('0 of 3 watched')).toBeVisible();
+	}
+	await open(page, '/tv/2001/season/3');
+	await page.getByRole('button', { name: 'S3 E2 watched; mark not watched' }).click();
+	await expect(page.getByRole('button', { name: 'Mark S3 E2 watched' })).toBeVisible();
+	await page.getByRole('button', { name: 'S3 E1 watched; mark not watched' }).click();
+	await expect(page.getByRole('button', { name: 'Mark S3 E1 watched' })).toBeVisible();
+	await open(page, '/tv/2001');
+	await page.getByRole('button', { name: '✓ Watchlist' }).click();
+	await expect(page.getByRole('button', { name: '+ Watchlist' })).toBeVisible();
+	await expect(page.getByText(/Up next/)).toHaveCount(0);
 });
