@@ -1,4 +1,5 @@
 GOOGLE_CLIENT_SECRET=dev-client-secret
+CRON_SECRET=dev-cron-secret
 VAPID_PRIVATE_KEY=
 # Optional: with a TMDB token, local development uses the real APIs instead of made-up titles.
 TMDB_TOKEN=

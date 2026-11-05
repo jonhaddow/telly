@@ -32,6 +32,8 @@ export const episodeActions = {
 					.filter((e) => !watched || (e.airDate && e.airDate <= day))
 					.map((e) => e.number);
 		await setWatched(locals.db, showId, season, episodes, watched, locals.user!.id);
-		await updateProgress(locals.db, tmdb, show, locals.user!.id, { ticked: watched });
+		await updateProgress(locals.db, tmdb, show, {
+			tickedBy: watched ? locals.user!.id : undefined
+		});
 	}
 };

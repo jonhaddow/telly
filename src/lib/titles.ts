@@ -31,6 +31,8 @@ export type Title = TitleSummary & {
 	trailer: string | null;
 	/** Where to watch it in the UK (JustWatch's data, via TMDB). */
 	providers: Providers;
+	/** A show's most recent episode out. */
+	latest: Episode | null;
 };
 
 export type Season = { number: number; name: string; episodes: number; airDate: string | null };

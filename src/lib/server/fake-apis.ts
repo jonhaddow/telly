@@ -102,6 +102,12 @@ const TITLES: (RawTitle & { media_type: 'movie' | 'tv' })[] = [
 			{ season_number: 2, name: 'Series 2', episode_count: 3, air_date: '2023-09-03' },
 			{ season_number: 3, name: 'Series 3', episode_count: 3, air_date: day(-10) }
 		],
+		last_episode_to_air: {
+			season_number: 3,
+			episode_number: 2,
+			name: 'Harbour Lights 3.2',
+			air_date: day(-3)
+		},
 		external_ids: { imdb_id: 'tt2000001' },
 		videos: { results: [] },
 		content_ratings: { results: [{ iso_3166_1: 'GB', rating: '15' }] },
