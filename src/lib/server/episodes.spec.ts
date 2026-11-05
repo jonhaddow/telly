@@ -38,7 +38,7 @@ describe('tracking', () => {
 		const show = (await api.title('tv', 2001))!;
 
 		await setWatched(db, 2001, 1, [1, 2, 3], true, 1);
-		const next = await updateProgress(db, api, show, 1, { ticked: true });
+		const next = await updateProgress(db, api, show, { tickedBy: 1 });
 		expect([next?.season, next?.number, next?.name]).toEqual([2, 1, 'Harbour Lights 2.1']);
 		const [row] = await db.select().from(watchlist);
 		expect([row.name, row.nextSeason, row.nextEpisode]).toEqual(['Harbour Lights', 2, 1]);
@@ -46,6 +46,6 @@ describe('tracking', () => {
 
 		await setWatched(db, 2001, 1, [2, 3], false, 1);
 		expect(await watchedEpisodes(db, 2001)).toEqual([ep(1, 1)]);
-		expect((await updateProgress(db, api, show, 1))?.number).toBe(2);
+		expect((await updateProgress(db, api, show))?.number).toBe(2);
 	});
 });

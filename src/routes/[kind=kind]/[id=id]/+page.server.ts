@@ -31,9 +31,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			: null;
 	const waiting = !kept || !kept.airDate || kept.airDate > today();
 	const next =
-		row && watched.length && waiting
-			? await updateProgress(locals.db, tmdb, title, locals.user!.id)
-			: kept;
+		row && watched.length && waiting ? await updateProgress(locals.db, tmdb, title) : kept;
 	return {
 		title,
 		listed: !!row,

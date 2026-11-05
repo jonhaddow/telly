@@ -13,8 +13,8 @@ if (dev) await import('./node-shims.ts');
 const PUBLIC = [
 	/^\/login$/,
 	/^\/auth\//,
-	// Called by the morning cron, which sends a secret.
-	/^\/remind$/
+	// Called by the hourly cron, which sends a secret.
+	/^\/check$/
 ];
 
 /** Sent with every page and endpoint (the CSP itself is configured in vite.config.ts). */
