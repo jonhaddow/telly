@@ -43,7 +43,8 @@ async function tick(db: DB, showId: number, episodes: EpisodeRef[], userId: numb
 	await db.run(sql`
 		INSERT INTO episode_watch (show_id, season, episode, watched_by, watched_at)
 		SELECT ${showId}, json_extract(value, '$.season'), json_extract(value, '$.episode'), ${userId}, ${at}
-		FROM json_each(${JSON.stringify(episodes)}) WHERE true
+		FROM json_each(${JSON.stringify(episodes)})
+		WHERE true -- SQLite needs it before ON CONFLICT in an INSERT … SELECT
 		ON CONFLICT DO NOTHING`);
 }
 
@@ -57,23 +58,20 @@ export async function setWatched(
 	userId: number,
 	now = new Date()
 ) {
-	if (watched)
-		return tick(
-			db,
-			showId,
-			episodes.map((episode) => ({ season, episode })),
-			userId,
-			now.toISOString()
-		);
-	await db
-		.delete(episodeWatch)
-		.where(
-			and(
-				eq(episodeWatch.showId, showId),
-				eq(episodeWatch.season, season),
-				sql`${episodeWatch.episode} IN (SELECT value FROM json_each(${JSON.stringify(episodes)}))`
-			)
-		);
+	if (watched) {
+		const refs = episodes.map((episode) => ({ season, episode }));
+		await tick(db, showId, refs, userId, now.toISOString());
+	} else {
+		await db
+			.delete(episodeWatch)
+			.where(
+				and(
+					eq(episodeWatch.showId, showId),
+					eq(episodeWatch.season, season),
+					sql`${episodeWatch.episode} IN (SELECT value FROM json_each(${JSON.stringify(episodes)}))`
+				)
+			);
+	}
 }
 
 /** Every episode out so far, from the show's seasons and its latest episode. */
