@@ -113,7 +113,7 @@
 </svelte:head>
 
 <main class="page">
-	<a class="back" href="/settings">‹ Settings</a>
+	<a class="back" href="/settings">Settings</a>
 	<h1>Notifications</h1>
 
 	{#if message}<p class="note" role="status">{message}</p>{/if}
@@ -168,7 +168,7 @@
 	.note {
 		background: var(--note-bg);
 		color: var(--note-ink);
-		border-radius: 12px;
+		border-radius: var(--radius);
 		padding: 12px 14px;
 		font-size: 15px;
 	}

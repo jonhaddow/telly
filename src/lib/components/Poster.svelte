@@ -20,7 +20,7 @@
 <style>
 	.poster {
 		aspect-ratio: 2 / 3;
-		border-radius: 10px;
+		border-radius: var(--radius-sm);
 		overflow: hidden;
 		background: var(--poster);
 		display: grid;

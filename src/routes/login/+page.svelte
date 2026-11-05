@@ -9,8 +9,9 @@
 </svelte:head>
 
 <main class="login">
+	<p class="on-air" aria-hidden="true">On tonight</p>
 	<h1>Telly</h1>
-	<p class="muted">What to watch next, and where.</p>
+	<p class="tagline">What to watch next, and where.</p>
 
 	{#if data.error}<p class="error" role="alert">{data.error}</p>{/if}
 
@@ -36,23 +37,52 @@
 </main>
 
 <style>
+	/* Left-aligned like a listings page: a small "on tonight" cue, then the
+	   name, huge and in the accent. */
 	.login {
-		max-width: 360px;
+		max-width: 400px;
 		margin: 0 auto;
 		min-height: 100vh;
 		min-height: 100dvh;
-		padding: 24px 16px;
+		padding: 24px 24px calc(48px + env(safe-area-inset-bottom));
 		display: flex;
 		flex-direction: column;
-		justify-content: center;
+		justify-content: flex-end;
 		gap: 16px;
-		text-align: center;
+	}
+	.on-air {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		font-size: 12px;
+		font-weight: 700;
+		letter-spacing: 1.5px;
+		text-transform: uppercase;
+		color: var(--muted);
+	}
+	.on-air::before {
+		content: '';
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: var(--over);
+		box-shadow: 0 0 10px var(--over);
+	}
+	h1 {
+		margin: -8px 0 -4px;
+		font-size: 128px;
+		line-height: 0.85;
+		color: var(--accent);
+	}
+	.tagline {
+		font-size: 19px;
+		margin-bottom: 24px;
 	}
 	.dev {
 		display: flex;
 		flex-direction: column;
 		gap: 8px;
-		margin-top: 24px;
+		margin-top: 16px;
 	}
 	.dev p {
 		font-size: 13px;

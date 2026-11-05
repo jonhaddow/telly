@@ -18,7 +18,7 @@
 </svelte:head>
 
 <main class="page">
-	<a class="back" href="/tv/{data.show.id}">‹ {data.show.name}</a>
+	<a class="back" href="/tv/{data.show.id}">{data.show.name}</a>
 	<header>
 		<h1>{data.season.name}</h1>
 		<p class="muted">{count} of {data.episodes.length} watched</p>
@@ -69,9 +69,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: 4px;
-	}
-	form .chip {
-		border: 0;
 	}
 	li {
 		display: grid;

@@ -98,7 +98,7 @@
 		width: 100%;
 		min-height: 52px;
 		padding: 12px 18px;
-		border-radius: 16px;
+		border-radius: var(--radius);
 		border: 1.5px solid var(--field);
 		background: var(--card);
 		font-size: 17px;
@@ -130,7 +130,7 @@
 		width: 44px;
 		height: 44px;
 		border: 0;
-		border-radius: 50%;
+		border-radius: var(--radius);
 		background: var(--line);
 		color: var(--ink);
 		font-size: 22px;
