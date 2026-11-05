@@ -1,9 +1,8 @@
-// The hourly check (worker/entry.js → /check): looks at the listed titles (not
-// seen films) not checked for a day, longest ago first, on TMDB, keeps their copies current, and says
-// what's new: an episode of a show being watched, a new season of one that isn't
-// yet, or a title arriving on one of our services. A few titles a run, so each
-// stays within the free plan's CPU and 50 outbound requests: a long list takes
-// a few runs to get round.
+// The hourly check (worker/entry.js → /check): checks the listed titles (not
+// seen films) on TMDB once a day, keeps their copies current, and says what's
+// new: an episode of a show being watched, a new season of one that isn't yet,
+// or a title arriving on one of our services. A few titles a run, longest ago
+// first, so each run stays within the free plan's CPU and 50 outbound requests.
 import { asc, eq, and, isNull, lt, or, sql } from 'drizzle-orm';
 import { addDays } from '../dates.ts';
 import { watchlist, type WatchlistRow } from './db/schema.ts';
