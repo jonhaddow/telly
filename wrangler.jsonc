@@ -15,6 +15,11 @@
 	"observability": {
 		"enabled": true
 	},
+	"triggers": {
+		// The watchlist check (worker/entry.js), hourly from 7:07 to 21:07 UTC: no
+		// alerts in the night.
+		"crons": ["7 7-21 * * *"]
+	},
 	"vars": {
 		"APP_ORIGIN": "https://telly.app.haddow.me",
 		// Public OAuth client ID; the secret is a Worker secret (GOOGLE_CLIENT_SECRET).

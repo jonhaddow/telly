@@ -29,6 +29,8 @@ declare global {
 			GOOGLE_CLIENT_ID: string;
 			/** Worker secret: `wrangler secret put GOOGLE_CLIENT_SECRET`. */
 			GOOGLE_CLIENT_SECRET: string;
+			/** Authenticates the hourly cron's call to /check. */
+			CRON_SECRET?: string;
 			/** Worker secret: TMDB's API Read Access Token. */
 			TMDB_TOKEN?: string;
 			/** Worker secret: OMDb API key (ratings are left off without it). */

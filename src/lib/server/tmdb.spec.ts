@@ -58,7 +58,8 @@ describe('toTitle', () => {
 				seasons: [],
 				imdbId: null,
 				trailer: null,
-				providers: { link: null, stream: [], free: [], buy: [] }
+				providers: { link: null, stream: [], free: [], buy: [] },
+				latest: null
 			});
 		}
 	});

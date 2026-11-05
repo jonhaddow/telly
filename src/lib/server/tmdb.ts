@@ -65,7 +65,7 @@ export type RawTitle = RawSummary & {
 	genres?: Genre[];
 	runtime?: number | null;
 	episode_run_time?: number[];
-	last_episode_to_air?: { runtime?: number | null } | null;
+	last_episode_to_air?: (Partial<RawEpisode> & { runtime?: number | null }) | null;
 	status?: string;
 	last_air_date?: string | null;
 	seasons?: RawSeason[];
@@ -201,7 +201,12 @@ export function toTitle(kind: Kind, t: RawTitle): Title {
 			})),
 		imdbId: (kind === 'movie' ? t.imdb_id : t.external_ids?.imdb_id) || null,
 		trailer: pickTrailer(t.videos?.results ?? []),
-		providers: toProviders(t['watch/providers']?.results?.GB)
+		providers: toProviders(t['watch/providers']?.results?.GB),
+		// Not specials (season 0).
+		latest:
+			kind === 'tv' && t.last_episode_to_air?.season_number && t.last_episode_to_air.episode_number
+				? toEpisode(t.last_episode_to_air as RawEpisode)
+				: null
 	};
 }
 

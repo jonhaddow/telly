@@ -77,7 +77,7 @@ export async function setWatched(
 
 /**
  * Works out a show's next episode and copies it to its watchlist row.
- * `ticked`: an episode was just ticked, so the show goes on the watchlist if it
+ * `tickedBy`: someone just ticked an episode, so the show goes on the watchlist if it
  * isn't there (watching it means it's ours) and Up next puts it first.
  * Returns the next episode, if there is one.
  */
@@ -85,15 +85,14 @@ export async function updateProgress(
 	db: DB,
 	tmdb: Tmdb,
 	show: Title,
-	userId: number,
-	{ ticked = false, now = new Date() } = {}
+	{ tickedBy, now = new Date() }: { tickedBy?: number; now?: Date } = {}
 ) {
 	const watched = await watchedEpisodes(db, show.id);
 	const next = nextAfter(show.seasons, watched);
 	const episode = next
 		? ((await tmdb.season(show.id, next.season))?.find((e) => e.number === next.episode) ?? null)
 		: null;
-	if (ticked) await addToWatchlist(db, show, userId, now);
+	if (tickedBy !== undefined) await addToWatchlist(db, show, tickedBy, now);
 	await db
 		.update(watchlist)
 		.set({
@@ -102,7 +101,7 @@ export async function updateProgress(
 			nextName: episode?.name ?? null,
 			nextAirDate: episode?.airDate ?? null,
 			nextStill: episode?.still ?? null,
-			...(ticked && { watchedAt: now.toISOString() })
+			...(tickedBy !== undefined && { watchedAt: now.toISOString() })
 		})
 		.where(and(eq(watchlist.kind, 'tv'), eq(watchlist.tmdbId, show.id)));
 	return episode;

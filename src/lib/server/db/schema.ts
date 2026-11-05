@@ -89,7 +89,11 @@ export const watchlist = sqliteTable(
 		nextAirDate: text('next_air_date'),
 		nextStill: text('next_still'),
 		/** When an episode was last ticked: Up next puts the latest first. */
-		watchedAt: text('watched_at')
+		watchedAt: text('watched_at'),
+		/** When the hourly check (alerts.ts) last looked at it on TMDB. */
+		checkedAt: text('checked_at'),
+		/** Shows: the latest episode out when last checked ("3x4"), to spot new ones. */
+		latestAired: text('latest_aired')
 	},
 	(t) => [primaryKey({ columns: [t.kind, t.tmdbId] }), index('watchlist_added_idx').on(t.addedAt)]
 );
