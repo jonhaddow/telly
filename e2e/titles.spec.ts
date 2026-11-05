@@ -17,10 +17,13 @@ test('search, open a film and see its ratings and trailer', async ({ page }) => 
 		'https://www.youtube.com/watch?v=fakeTrailer1'
 	);
 
-	// Back keeps the search.
-	await page.getByRole('link', { name: 'Back', exact: true }).click();
+	// The browser's Back keeps the search; the page's goes to the list.
+	await page.goBack();
 	await expect(page).toHaveURL(/q=light/);
 	await expect(page.getByRole('searchbox')).toHaveValue('light');
+	await page.getByRole('link', { name: /The Long Light/ }).click();
+	await page.getByRole('link', { name: 'Back', exact: true }).click();
+	await expect(page.getByRole('heading', { name: 'Watchlist' })).toBeVisible();
 });
 
 test('a show that is still running', async ({ page }) => {
