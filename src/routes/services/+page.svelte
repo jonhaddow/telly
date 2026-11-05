@@ -79,7 +79,7 @@
 	img {
 		width: 38px;
 		height: 38px;
-		border-radius: 9px;
+		border-radius: var(--radius-sm);
 		flex: none;
 	}
 	span {
@@ -89,7 +89,7 @@
 	/* Over the tab bar, so it's always in reach. */
 	.save {
 		position: sticky;
-		bottom: calc(var(--tabs) + 24px + env(safe-area-inset-bottom));
+		bottom: calc(var(--tabs) + 16px + env(safe-area-inset-bottom));
 		margin-top: 16px;
 	}
 </style>

@@ -37,14 +37,16 @@
 		--over: #ff6b5e;
 		--good: #7ddc9a;
 		--note-bg: #22250d;
-		--note-ink: #e4f542;
+		--note-ink: var(--accent);
 		--alert-bg: #3a1512;
 		--alert-ink: #ffb0a6;
 		/* Posters with no image. */
 		--poster: #1f1e24;
 		--radius: 6px;
+		/* Things inside a card or button: posters, logos, badges. */
+		--radius-sm: 4px;
 		--display: 'Big Shoulders Display Variable', 'Arial Narrow', sans-serif;
-		/* The tab bar's height, above the iPhone's home bar. */
+		/* The tab bar's height, not counting the iPhone's home bar below it. */
 		--tabs: 60px;
 		/* A faint edge separates cards on the dark background. */
 		--shadow: 0 0 0 1px rgb(255 255 255 / 0.06);
@@ -210,7 +212,7 @@
 		gap: 6px;
 		min-height: 40px;
 		/* Inside the track's padding. */
-		border-radius: 4px;
+		border-radius: var(--radius-sm);
 		font-weight: 600;
 		font-size: 15px;
 		color: var(--muted);

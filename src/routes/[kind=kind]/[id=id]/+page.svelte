@@ -150,7 +150,7 @@
 	}
 	.poster {
 		box-shadow: 0 8px 24px rgb(0 0 0 / 0.25);
-		border-radius: 4px;
+		border-radius: var(--radius-sm);
 	}
 	.heading {
 		display: flex;
@@ -170,7 +170,7 @@
 		margin-left: 4px;
 		padding: 0 6px;
 		border: 1.5px solid currentColor;
-		border-radius: 5px;
+		border-radius: var(--radius-sm);
 		font-size: 12px;
 		font-weight: 800;
 		line-height: 18px;
@@ -257,7 +257,7 @@
 		align-items: center;
 		gap: 6px;
 		padding: 8px 14px 8px 10px;
-		border-radius: 4px;
+		border-radius: var(--radius-sm);
 		background: var(--accent);
 		color: var(--on-accent);
 		font-weight: 800;

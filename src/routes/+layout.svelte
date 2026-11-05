@@ -4,7 +4,7 @@
 	import { page, updated } from '$app/state';
 	// Served with the app (not Google Fonts): no extra connections before text shows.
 	import '@fontsource-variable/instrument-sans';
-	import font from '@fontsource-variable/instrument-sans/files/instrument-sans-latin-wght-normal.woff2?url';
+	import sans from '@fontsource-variable/instrument-sans/files/instrument-sans-latin-wght-normal.woff2?url';
 	import display from '@fontsource-variable/big-shoulders-display/files/big-shoulders-display-latin-wght-normal.woff2?url';
 	import './app.css';
 
@@ -49,7 +49,7 @@
 </script>
 
 <svelte:head>
-	<link rel="preload" href={font} as="font" type="font/woff2" crossorigin="anonymous" />
+	<link rel="preload" href={sans} as="font" type="font/woff2" crossorigin="anonymous" />
 	<link rel="preload" href={display} as="font" type="font/woff2" crossorigin="anonymous" />
 </svelte:head>
 
