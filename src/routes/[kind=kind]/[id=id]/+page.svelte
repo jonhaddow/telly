@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { afterNavigate } from '$app/navigation';
 	import { enhance } from '$app/forms';
 	import { stay } from '#lib/forms.ts';
 	import Poster from '#lib/components/Poster.svelte';
@@ -28,16 +27,6 @@
 				? { action: '?/remove', label: '✓ Watchlist' }
 				: { action: '?/add', label: '+ Watchlist' }
 	);
-
-	// Back to wherever you came from in the app (search results keep their words);
-	// opened from a link or a notification, to search.
-	let fromApp = false;
-	afterNavigate(({ from }) => (fromApp = !!from));
-	function back(e: MouseEvent) {
-		if (!fromApp) return;
-		e.preventDefault();
-		history.back();
-	}
 </script>
 
 <svelte:head>
@@ -51,7 +40,8 @@
 {/if}
 
 <main class="page" class:over-backdrop={!!t.backdrop}>
-	<a class="back" href="/search" onclick={back}>Back</a>
+	<!-- To the list it's on (the watchlist if neither). -->
+	<a class="back" href={data.seen ? '/?list=seen' : '/'}>Back</a>
 
 	<header>
 		<div class="poster"><Poster path={t.poster} name={t.name} width="w342" /></div>
