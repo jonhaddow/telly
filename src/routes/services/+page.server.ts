@@ -18,13 +18,23 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const chosen = new Set(ours.map((s) => s.id));
 	// How much of the watchlist each service shows, to weigh up subscribing.
 	const day = today();
-	const counts = new Map<number, number>();
-	for (const r of rows)
-		if (!isSeen(r, day)) for (const id of r.watchableOn) counts.set(id, (counts.get(id) ?? 0) + 1);
+	const counts = new Map<number, { films: number; shows: number }>();
+	for (const r of rows) {
+		if (isSeen(r, day)) continue;
+		for (const id of r.watchableOn) {
+			const c = counts.get(id) ?? { films: 0, shows: 0 };
+			if (r.kind === 'movie') c.films++;
+			else c.shows++;
+			counts.set(id, c);
+		}
+	}
 	const most = all
-		.map((s) => ({ ...s, count: counts.get(s.id) ?? 0 }))
-		.filter((s) => s.count)
-		.sort((a, b) => b.count - a.count)
+		.flatMap((s) => {
+			const c = counts.get(s.id);
+			// Links to the tab with more of them.
+			return c ? [{ ...s, ...c, kind: c.shows > c.films ? 'tv' : 'movie' }] : [];
+		})
+		.sort((a, b) => b.films + b.shows - (a.films + a.shows))
 		.slice(0, MOST);
 	// Keep any chosen ones that have dropped out of the top.
 	return {

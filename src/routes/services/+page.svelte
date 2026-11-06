@@ -24,10 +24,17 @@
 			<ul class="list">
 				{#each data.most as s (s.id)}
 					<li>
-						<a href="/?on={s.id}">
+						<a href="/?on={s.id}&kind={s.kind}">
 							{#if s.logo}<img src={imageUrl(s.logo, 'w92')} alt="" />{/if}
 							<span>{s.name}</span>
-							<span class="count">{s.count} {s.count === 1 ? 'title' : 'titles'}</span>
+							<span class="count"
+								>{[
+									s.films && `${s.films} ${s.films === 1 ? 'film' : 'films'}`,
+									s.shows && `${s.shows} ${s.shows === 1 ? 'show' : 'shows'}`
+								]
+									.filter(Boolean)
+									.join(' · ')}</span
+							>
 						</a>
 					</li>
 				{/each}
