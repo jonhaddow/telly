@@ -40,8 +40,8 @@
 {/if}
 
 <main class="page" class:over-backdrop={!!t.backdrop}>
-	<!-- To the list it's on (the watchlist if neither). -->
-	<a class="back" href={data.seen ? '/?list=seen' : '/'}>Back</a>
+	<!-- To the list it's on (the watchlist if neither), on its tab. -->
+	<a class="back" href="/?{data.seen ? 'list=seen&' : ''}kind={t.kind}">Back</a>
 
 	<header>
 		<div class="poster"><Poster path={t.poster} name={t.name} width="w342" /></div>

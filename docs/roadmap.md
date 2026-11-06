@@ -4,7 +4,7 @@
 
 - Search films and shows
 - Title page: poster, facts, UK certificate, IMDb / Rotten Tomatoes / Metacritic scores, trailer
-- Shared watchlist (add from search or a title), filter by films / TV / genre / on our services / to rent / one service
+- Shared watchlist (add from search or a title), Films and TV tabs (opens on the last one), filter by genre / on our services / to rent / one service
 - Seen: films marked seen, and shows ticked up to the latest episode (back on the watchlist when a new one airs)
 - Your services, and which have most of the watchlist; where to watch on each title, yours first
 - Episode tracking (shared): tick episodes or whole seasons; Up next on the watchlist and each show

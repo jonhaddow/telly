@@ -42,7 +42,7 @@ test('tick episodes: a season, up next on the show and the watchlist', async ({ 
 	await expect(page.getByText(/S3 E3 is out /)).toBeVisible();
 
 	// Caught up, so it's seen.
-	await open(page, '/?list=seen');
+	await open(page, '/?list=seen&kind=tv');
 	await expect(page.getByRole('link', { name: /Harbour Lights/ })).toBeVisible();
 
 	// Off the list again (for the other tests), and it stays off.
