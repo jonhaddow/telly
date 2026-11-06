@@ -1,25 +1,28 @@
 <script lang="ts">
 	import EpisodeCheck from '#lib/components/EpisodeCheck.svelte';
 	import Poster from '#lib/components/Poster.svelte';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 	import { episodeCode, imageUrl, titlePath } from '#lib/titles.ts';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
-	/** This page's address with a filter changed. */
-	function href(change: { seen?: boolean; kind?: string | null; mine?: boolean; rent?: boolean }) {
-		const seen = change.seen ?? data.seen;
-		const kind = change.kind === undefined ? data.kind : change.kind;
-		const mine = !seen && (change.mine ?? data.mine);
-		const rent = !seen && (change.rent ?? data.rent);
-		const q = [seen && 'list=seen', kind && `kind=${kind}`, mine && 'mine=1', rent && 'rent=1']
-			.filter(Boolean)
+	/** This page's address with filters changed (null clears one). */
+	function href(change: Record<string, string | null>) {
+		const all = { ...Object.fromEntries(page.url.searchParams), ...change };
+		// Seen has no service, rent or genre filters.
+		if (all.list) all.mine = all.rent = all.genre = null;
+		const q = Object.entries(all)
+			.filter((e): e is [string, string] => !!e[1])
+			.map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
 			.join('&');
 		return q ? `/?${q}` : '/';
 	}
+	const toggle = (name: string, on: boolean) => href({ [name]: on ? null : '1' });
 	const lists = [
-		{ seen: false, label: 'Watchlist' },
-		{ seen: true, label: 'Seen' }
+		{ list: null, label: 'Watchlist' },
+		{ list: 'seen', label: 'Seen' }
 	];
 	const kinds = [
 		{ kind: null, label: 'All' },
@@ -35,10 +38,10 @@
 <main class="page">
 	<nav class="lists" aria-label="Lists" data-sveltekit-reset="false">
 		{#each lists as l (l.label)}
-			{#if l.seen === data.seen}
+			{#if !!l.list === data.seen}
 				<h1>{l.label}</h1>
 			{:else}
-				<a href={href({ seen: l.seen })} data-sveltekit-replacestate>{l.label}</a>
+				<a href={href({ list: l.list })} data-sveltekit-replacestate>{l.label}</a>
 			{/if}
 		{/each}
 	</nav>
@@ -90,26 +93,53 @@
 				>
 			{/each}
 		</nav>
-		{#if !data.seen}
-			<div class="chips" data-sveltekit-reset="false">
-				{#if data.hasServices}
-					<a
-						class="chip"
-						class:on={data.mine}
-						href={href({ mine: !data.mine })}
-						aria-current={data.mine ? 'true' : undefined}
-						data-sveltekit-replacestate>On our services</a
-					>
-				{/if}
+		<div class="chips" data-sveltekit-reset="false">
+			{#if data.on}
+				<a
+					class="chip on"
+					href={href({ on: null })}
+					aria-label="On {data.on.name}: show all"
+					data-sveltekit-replacestate>On {data.on.name} ✕</a
+				>
+			{/if}
+			{#if data.hasServices && !data.seen}
+				<a
+					class="chip"
+					class:on={data.mine}
+					href={toggle('mine', data.mine)}
+					aria-current={data.mine ? 'true' : undefined}
+					data-sveltekit-replacestate>On our services</a
+				>
+			{/if}
+			{#if !data.seen}
 				<a
 					class="chip"
 					class:on={data.rent}
-					href={href({ rent: !data.rent })}
+					href={toggle('rent', data.rent)}
 					aria-current={data.rent ? 'true' : undefined}
 					data-sveltekit-replacestate>To rent</a
 				>
-			</div>
-		{/if}
+			{/if}
+			{#if data.genres.length}
+				<label class="chip genre" class:on={data.genre}>
+					<span>{data.genre ?? 'Genre'} ▾</span>
+					<select
+						aria-label="Genre"
+						value={data.genre ?? ''}
+						onchange={(e) =>
+							goto(href({ genre: e.currentTarget.value }), {
+								replace: true,
+								reset: false
+							})}
+					>
+						<option value="">Any genre</option>
+						{#each data.genres as g (g)}
+							<option value={g}>{g}</option>
+						{/each}
+					</select>
+				</label>
+			{/if}
+		</div>
 
 		{#if data.items.length}
 			<ul class="grid">
@@ -147,6 +177,20 @@
 </main>
 
 <style>
+	/* The phone's own picker, under a chip. */
+	.genre select {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		margin: 0;
+		opacity: 0;
+		font-size: 16px;
+		cursor: pointer;
+	}
+	.genre:has(select:focus-visible) {
+		outline: 2px solid var(--ink);
+		outline-offset: 2px;
+	}
 	/* Watchlist and Seen: this one's the heading, the other dimmed beside it. */
 	.lists {
 		display: flex;

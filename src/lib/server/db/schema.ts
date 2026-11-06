@@ -81,6 +81,8 @@ export const watchlist = sqliteTable(
 		watchableOn: text('watchable_on', { mode: 'json' }).$type<number[]>().notNull(),
 		/** Somewhere rents or sells it (so it's out, not just in cinemas or coming). */
 		toRent: integer('to_rent', { mode: 'boolean' }).notNull().default(false),
+		/** Film and TV genres in one set of names (`listGenres`), for the filter. */
+		genres: text('genres', { mode: 'json' }).$type<string[]>().notNull().default([]),
 		addedBy: integer('added_by').references(() => user.id, { onDelete: 'set null' }),
 		addedAt: text('added_at').notNull(),
 		// Shows: the episode after the latest one watched (episodes.ts), copied so

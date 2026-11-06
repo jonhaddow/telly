@@ -38,7 +38,19 @@ test('pick services, add from search and a title page, filter, remove', async ({
 	await page.getByRole('link', { name: 'To rent' }).click();
 	await expect(grid.getByRole('link')).toHaveText([/The Long Light/]);
 
+	// By genre, and by a service that isn't ours, from Your services' counts.
+	await open(page, '/');
+	await page.getByLabel('Genre').selectOption('Crime');
+	await expect(grid.getByRole('link')).toHaveText([/Harbour Lights/]);
+	await open(page, '/services');
+	const most = page.getByRole('region', { name: 'Most of your watchlist' });
+	await expect(most.getByRole('link')).toHaveText([/Netflix.*1 title/, /BBC iPlayer.*1 title/]);
+	await most.getByRole('link', { name: /BBC iPlayer/ }).click();
+	await expect(page.getByRole('link', { name: 'On BBC iPlayer: show all' })).toBeVisible();
+	await expect(grid.getByRole('link')).toHaveText([/Harbour Lights/]);
+
 	// Remove it again.
+	await open(page, '/');
 	await grid.getByRole('link', { name: /The Long Light/ }).click();
 	await page.getByRole('button', { name: '✓ Watchlist' }).click();
 	await expect(page.getByRole('button', { name: '+ Watchlist' })).toBeVisible();
