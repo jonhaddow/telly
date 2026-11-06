@@ -11,7 +11,7 @@ import { updateProgress } from './episodes.ts';
 import type { PushPayload } from './push.ts';
 import type { Tmdb } from './tmdb.ts';
 import { services } from './watchlist.ts';
-import { episodeCode, titlePath, watchableOn, type Title } from '../titles.ts';
+import { episodeCode, listedCopy, titlePath, watchableOn, type Title } from '../titles.ts';
 
 /** Titles a run: each is one or two TMDB calls. */
 const PER_RUN = 12;
@@ -132,10 +132,7 @@ export async function checkTitles(
 				.set({
 					checkedAt: now.toISOString(),
 					...(t && {
-						name: t.name,
-						years: t.years,
-						poster: t.poster,
-						watchableOn: watchableOn(t.providers),
+						...listedCopy(t),
 						latestAired: airedKey(t)
 					})
 				})

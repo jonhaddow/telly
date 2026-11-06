@@ -68,6 +68,23 @@ export type Providers = {
 /** Ids of the services showing it at no extra cost: subscription or free. */
 export const watchableOn = (p: Providers) => [...p.stream, ...p.free].map((s) => s.id);
 
+/** TMDB's TV genres pair up ("Action & Adventure"): split them into its film ones. */
+const FILM_GENRE: Record<string, string> = { 'Sci-Fi': 'Science Fiction' };
+export const listGenres = (genres: string[]) => [
+	...new Set(genres.flatMap((g) => g.split(' & ')).map((g) => FILM_GENRE[g] ?? g))
+];
+
+/** What a watchlist row copies from TMDB, so the list loads without it. */
+export const listedCopy = (t: Title) => ({
+	name: t.name,
+	years: t.years,
+	poster: t.poster,
+	watchableOn: watchableOn(t.providers),
+	// Films only: shows on sale would crowd it.
+	toRent: t.kind === 'movie' && t.providers.buy.length > 0,
+	genres: listGenres(t.genres)
+});
+
 export type Ratings = {
 	imdb: number | null;
 	imdbVotes: number | null;

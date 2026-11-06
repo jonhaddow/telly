@@ -49,9 +49,11 @@ describe('watchlist', () => {
 		const film = (await api.title('movie', 1001))!;
 		expect(await refreshListed(db, film)).toBeNull();
 		await addToWatchlist(db, film, 1);
-		const moved = { ...film, providers: { ...film.providers, stream: [], free: [] } };
+		expect((await watchlistRows(db))[0].toRent).toBe(true);
+		const moved = { ...film, providers: { ...film.providers, stream: [], free: [], buy: [] } };
 		expect((await refreshListed(db, moved))?.watchableOn).toEqual([]);
-		expect((await watchlistRows(db))[0].watchableOn).toEqual([]);
+		const [row] = await watchlistRows(db);
+		expect([row.watchableOn, row.toRent]).toEqual([[], false]);
 	});
 });
 
