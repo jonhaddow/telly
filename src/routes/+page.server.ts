@@ -13,9 +13,16 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const kind = KINDS.find((k) => k === param('kind')) ?? null;
 	const mine = !seen && param('mine') === '1';
 	const rent = !seen && param('rent') === '1';
-	const genre = param('genre');
+	const genre = seen ? null : param('genre');
 	// One service, from the counts on Your services: is it worth subscribing to?
 	const onId = Number(param('on')) || null;
+	// A service that isn't ours needs TMDB for its name. An unknown one isn't a filter.
+	const on = onId
+		? (ours.find((s) => s.id === onId) ??
+			(await (await apis()).tmdb.services()).find((s) => s.id === onId) ??
+			null)
+		: null;
+	const ourIds = new Set(ours.map((s) => s.id));
 	const day = today();
 	const rows = all.filter((r) => isSeen(r, day) === seen);
 	if (seen)
@@ -27,9 +34,10 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		.filter(
 			(r) =>
 				(!kind || r.kind === kind) &&
+				(!mine || r.watchableOn.some((id) => ourIds.has(id))) &&
 				(!rent || r.toRent) &&
 				(!genre || r.genres.includes(genre)) &&
-				(!onId || r.watchableOn.includes(onId))
+				(!on || r.watchableOn.includes(on.id))
 		)
 		.map((r) => ({
 			kind: r.kind,
@@ -39,8 +47,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			poster: r.poster,
 			// Ours that show it, most popular first.
 			on: ours.filter((s) => r.watchableOn.includes(s.id))
-		}))
-		.filter((t) => !mine || t.on.length);
+		}));
 	// Shows with an episode out that's next to watch, latest watched first (none seen).
 	const upNext = rows
 		.filter((r) => r.nextEpisode && nextOut(r, day))
@@ -54,12 +61,6 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			number: r.nextEpisode!,
 			episodeName: r.nextName ?? ''
 		}));
-	// A service that isn't ours needs TMDB for its name: only when filtering by one.
-	const on = onId
-		? (ours.find((s) => s.id === onId) ??
-			(await (await apis()).tmdb.services()).find((s) => s.id === onId) ??
-			null)
-		: null;
 	return {
 		seen,
 		upNext,
@@ -67,7 +68,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		mine,
 		rent,
 		genre,
-		genres: [...new Set(rows.flatMap((r) => r.genres))].sort(),
+		genres: seen ? [] : [...new Set(rows.flatMap((r) => r.genres))].sort(),
 		on,
 		total: rows.length,
 		hasServices: ours.length > 0,

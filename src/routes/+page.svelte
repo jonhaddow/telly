@@ -11,8 +11,8 @@
 	/** This page's address with filters changed (null clears one). */
 	function href(change: Record<string, string | null>) {
 		const all = { ...Object.fromEntries(page.url.searchParams), ...change };
-		// Seen has no service or rent filters.
-		if (all.list) all.mine = all.rent = null;
+		// Seen has no service, rent or genre filters.
+		if (all.list) all.mine = all.rent = all.genre = null;
 		const q = Object.entries(all)
 			.filter((e): e is [string, string] => !!e[1])
 			.map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
