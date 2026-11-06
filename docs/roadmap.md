@@ -8,7 +8,7 @@
 - Seen: films marked seen, and shows ticked up to the latest episode (back on the watchlist when a new one airs)
 - Your services; where to watch on each title, yours first
 - Episode tracking (shared): tick episodes or whole seasons; Up next on the watchlist and each show
-- Push alerts, each title checked once a day: new episodes of shows being watched, new seasons of ones on the list, and watchlist titles arriving on your services
+- Push alerts, each title checked once a day: new episodes of shows you're caught up on, new seasons of ones on the list, and watchlist titles arriving on your services
 
 ## Later
 

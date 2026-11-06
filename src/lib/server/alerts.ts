@@ -1,6 +1,6 @@
 // The hourly check (worker/entry.js → /check): checks the listed titles (not
 // seen films) on TMDB once a day, keeps their copies current, and says what's
-// new: an episode of a show being watched, a new season of one that isn't yet,
+// new: an episode of a show we're caught up on, a new season of one not started,
 // or a title arriving on one of our services. A few titles a run, longest ago
 // first, so each run stays within the free plan's CPU and 50 outbound requests.
 import { asc, eq, and, isNull, lt, or, sql } from 'drizzle-orm';
@@ -53,17 +53,23 @@ export function news(
 	const key = airedKey(t);
 	const fresh = latest?.airDate && latest.airDate >= addDays(today, -NEWS_DAYS);
 	if (latest && key !== row.latestAired && fresh) {
-		// Watching it: every episode. Not yet: only a new season, even if it all
-		// came out at once (latest 3x8 after 2x10).
-		const seenSeason = Number(row.latestAired?.split('x')[0] ?? 0);
+		// Caught up: every episode. Part way through: nothing (no news of season 7
+		// mid season 4). Not started: only a new season, even if it all came out at
+		// once (latest 3x8 after 2x10).
+		const [seenSeason, seenEpisode] = (row.latestAired ?? '0x0').split('x').map(Number);
+		// Caught up: the next episode to watch is after the latest out last check.
+		const next = row.nextSeason ?? Infinity;
+		const caughtUp =
+			next > seenSeason || (next === seenSeason && (row.nextEpisode ?? 0) > seenEpisode);
 		if (row.watchedAt) {
-			notices.push({
-				title: `New ${t.name}`,
-				body: `${episodeCode(latest)} · ${latest.name}`,
-				url,
-				badge: 0,
-				tag: `ep-${t.id}`
-			});
+			if (caughtUp)
+				notices.push({
+					title: `New ${t.name}`,
+					body: `${episodeCode(latest)} · ${latest.name}`,
+					url,
+					badge: 0,
+					tag: `ep-${t.id}`
+				});
 		} else if (latest.season > seenSeason) {
 			notices.push({
 				title: `${t.name}: season ${latest.season} is out`,

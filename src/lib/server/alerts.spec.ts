@@ -61,6 +61,16 @@ describe('news', () => {
 		expect(news(row({ watchedAt: 'x', latestAired: '2x4' }), t, ours, TODAY)).toEqual([]);
 	});
 
+	it('says nothing of a show part way through', () => {
+		const t = show(episode(3, 1, '2026-11-04'));
+		// Next up was 2x2, before the latest out (2x3).
+		const behind = row({ watchedAt: 'x', nextSeason: 2, nextEpisode: 2 });
+		expect(news(behind, t, ours, TODAY)).toEqual([]);
+		// Next up was 2x4, not out yet: caught up.
+		const waiting = row({ watchedAt: 'x', nextSeason: 2, nextEpisode: 4 });
+		expect(news(waiting, t, ours, TODAY)).toHaveLength(1);
+	});
+
 	it('tells of a new season only for a show not started', () => {
 		expect(news(row({}), show(episode(2, 4, '2026-11-04')), ours, TODAY)).toEqual([]);
 		const [n] = news(row({}), show(episode(3, 1, '2026-11-05')), ours, TODAY);
