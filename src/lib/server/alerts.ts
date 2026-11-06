@@ -1,8 +1,8 @@
 // The hourly check (worker/entry.js → /check): checks the listed titles (not
 // seen films) on TMDB once a day, keeps their copies current, and says what's
-// new: an episode of a show we're caught up on, a new season of one not started,
-// or a title arriving on one of our services. A few titles a run, longest ago
-// first, so each run stays within the free plan's CPU and 50 outbound requests.
+// new: an episode of a show we're caught up on, or a title arriving on one of
+// our services. A few titles a run, longest ago first, so each run stays within
+// the free plan's CPU and 50 outbound requests.
 import { asc, eq, and, isNull, lt, or, sql } from 'drizzle-orm';
 import { addDays } from '../dates.ts';
 import { watchlist, type WatchlistRow } from './db/schema.ts';
@@ -53,28 +53,18 @@ export function news(
 	const key = airedKey(t);
 	const fresh = latest?.airDate && latest.airDate >= addDays(today, -NEWS_DAYS);
 	if (latest && key !== row.latestAired && fresh) {
-		// Caught up (nothing left to watch, or next up is after the latest out last
-		// check): every episode. Part way through: nothing (no news of season 7 mid
-		// season 4). Not started: only a new season, even if it all came out at once
-		// (latest 3x8 after 2x10).
+		// Only for a show we're caught up on: ticked some, and nothing left to watch
+		// or next up is after the latest out last check (no news of season 7 mid
+		// season 4, nor of a show not started).
 		const [seenSeason, seenEpisode] = (row.latestAired ?? '0x0').split('x').map(Number);
 		const caughtUp =
 			row.nextSeason == null ||
 			row.nextSeason > seenSeason ||
 			(row.nextSeason === seenSeason && (row.nextEpisode ?? 0) > seenEpisode);
-		if (row.watchedAt) {
-			if (caughtUp)
-				notices.push({
-					title: `New ${t.name}`,
-					body: `${episodeCode(latest)} · ${latest.name}`,
-					url,
-					badge: 0,
-					tag: `ep-${t.id}`
-				});
-		} else if (latest.season > seenSeason) {
+		if (row.watchedAt && caughtUp) {
 			notices.push({
-				title: `${t.name}: season ${latest.season} is out`,
-				body: latest.name,
+				title: `New ${t.name}`,
+				body: `${episodeCode(latest)} · ${latest.name}`,
 				url,
 				badge: 0,
 				tag: `ep-${t.id}`

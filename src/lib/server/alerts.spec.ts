@@ -71,13 +71,8 @@ describe('news', () => {
 		expect(news(waiting, t, ours, TODAY)).toHaveLength(1);
 	});
 
-	it('tells of a new season only for a show not started', () => {
-		expect(news(row({}), show(episode(2, 4, '2026-11-04')), ours, TODAY)).toEqual([]);
-		const [n] = news(row({}), show(episode(3, 1, '2026-11-05')), ours, TODAY);
-		expect(n.title).toBe('Show: season 3 is out');
-		// All of it at once.
-		const [all] = news(row({}), show(episode(3, 8, '2026-11-05')), ours, TODAY);
-		expect(all.title).toBe('Show: season 3 is out');
+	it('says nothing of a show not started, even a new season', () => {
+		expect(news(row({}), show(episode(3, 1, '2026-11-05')), ours, TODAY)).toEqual([]);
 	});
 
 	it('ignores old episodes, and anything on the first check', () => {
