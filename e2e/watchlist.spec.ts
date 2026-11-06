@@ -25,32 +25,36 @@ test('pick services, add from search and a title page, filter, remove', async ({
 	await page.getByRole('button', { name: '+ Watchlist' }).click();
 	await expect(page.getByRole('button', { name: '✓ Watchlist' })).toBeVisible();
 
+	// Films first with no episode up next; then the tab last opened.
 	await open(page, '/');
 	const grid = page.getByRole('list').last();
-	await expect(grid.getByRole('link')).toHaveText([/The Long Light/, /Harbour Lights/]);
+	await expect(grid.getByRole('link')).toHaveText([/The Long Light/]);
+	await page.getByRole('link', { name: 'TV' }).click();
+	await expect(grid.getByRole('link')).toHaveText([/Harbour Lights/]);
+	await open(page, '/');
+	await expect(page.getByRole('link', { name: 'TV' })).toHaveAttribute('aria-current', 'page');
+	await expect(page.getByRole('link', { name: 'To rent' })).toHaveCount(0);
 	await page.getByRole('link', { name: 'Films' }).click();
 	await expect(grid.getByRole('link')).toHaveText([/The Long Light/]);
-	await page.getByRole('link', { name: 'All' }).click();
-	await expect(grid.getByRole('link')).toHaveCount(2);
 	await page.getByRole('link', { name: 'On our services' }).click();
-	await expect(grid.getByRole('link')).toHaveCount(1);
 	await expect(grid.getByRole('link', { name: /The Long Light.*on Netflix/ })).toBeVisible();
 	await page.getByRole('link', { name: 'To rent' }).click();
 	await expect(grid.getByRole('link')).toHaveText([/The Long Light/]);
 
-	// By genre, and by a service that isn't ours, from Your services' counts.
-	await open(page, '/');
+	// By genre, and by a service that isn't ours, from Your services' counts (on its tab).
+	await open(page, '/?kind=tv');
 	await page.getByLabel('Genre').selectOption('Crime');
 	await expect(grid.getByRole('link')).toHaveText([/Harbour Lights/]);
+	await open(page, '/?kind=movie');
 	await open(page, '/services');
 	const most = page.getByRole('region', { name: 'Most of your watchlist' });
-	await expect(most.getByRole('link')).toHaveText([/Netflix.*1 title/, /BBC iPlayer.*1 title/]);
+	await expect(most.getByRole('link')).toHaveText([/Netflix.*1 film/, /BBC iPlayer.*1 show/]);
 	await most.getByRole('link', { name: /BBC iPlayer/ }).click();
 	await expect(page.getByRole('link', { name: 'On BBC iPlayer: show all' })).toBeVisible();
 	await expect(grid.getByRole('link')).toHaveText([/Harbour Lights/]);
 
 	// Remove it again.
-	await open(page, '/');
+	await open(page, '/?kind=movie');
 	await grid.getByRole('link', { name: /The Long Light/ }).click();
 	await page.getByRole('button', { name: '✓ Watchlist' }).click();
 	await expect(page.getByRole('button', { name: '+ Watchlist' })).toBeVisible();

@@ -11,8 +11,9 @@
 	/** This page's address with filters changed (null clears one). */
 	function href(change: Record<string, string | null>) {
 		const all = { ...Object.fromEntries(page.url.searchParams), ...change };
-		// Seen has no service, rent or genre filters.
-		if (all.list) all.mine = all.rent = all.genre = null;
+		// Seen has no service, rent or genre filters; a tab has its own genres.
+		if (all.list) all.mine = null;
+		if (all.list || change.kind) all.rent = all.genre = null;
 		const q = Object.entries(all)
 			.filter((e): e is [string, string] => !!e[1])
 			.map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
@@ -25,7 +26,6 @@
 		{ list: 'seen', label: 'Seen' }
 	];
 	const kinds = [
-		{ kind: null, label: 'All' },
 		{ kind: 'movie', label: 'Films' },
 		{ kind: 'tv', label: 'TV' }
 	];
@@ -45,32 +45,6 @@
 			{/if}
 		{/each}
 	</nav>
-
-	{#if data.upNext.length}
-		<section class="up-next" aria-labelledby="up-next">
-			<h2 id="up-next">Up next</h2>
-			<ul class="list">
-				{#each data.upNext as e (e.id)}
-					<li>
-						<a href="/tv/{e.id}">
-							<span class="thumb">
-								{#if e.still}
-									<img src={imageUrl(e.still, 'w185')} alt="" loading="lazy" />
-								{:else}
-									<Poster path={e.poster} name={e.name} width="w92" />
-								{/if}
-							</span>
-							<span class="text">
-								<strong>{e.name}</strong>
-								<span class="muted">{episodeCode(e)} · {e.episodeName}</span>
-							</span>
-						</a>
-						<EpisodeCheck show={e.id} season={e.season} episode={e.number} watched={false} />
-					</li>
-				{/each}
-			</ul>
-		</section>
-	{/if}
 
 	{#if !data.total && data.seen}
 		<section class="card empty">
@@ -93,6 +67,31 @@
 				>
 			{/each}
 		</nav>
+		{#if data.upNext.length}
+			<section class="up-next" aria-labelledby="up-next">
+				<h2 id="up-next">Up next</h2>
+				<ul class="list">
+					{#each data.upNext as e (e.id)}
+						<li>
+							<a href="/tv/{e.id}">
+								<span class="thumb">
+									{#if e.still}
+										<img src={imageUrl(e.still, 'w185')} alt="" loading="lazy" />
+									{:else}
+										<Poster path={e.poster} name={e.name} width="w92" />
+									{/if}
+								</span>
+								<span class="text">
+									<strong>{e.name}</strong>
+									<span class="muted">{episodeCode(e)} · {e.episodeName}</span>
+								</span>
+							</a>
+							<EpisodeCheck show={e.id} season={e.season} episode={e.number} watched={false} />
+						</li>
+					{/each}
+				</ul>
+			</section>
+		{/if}
 		<div class="chips" data-sveltekit-reset="false">
 			{#if data.on}
 				<a
@@ -111,7 +110,7 @@
 					data-sveltekit-replacestate>On our services</a
 				>
 			{/if}
-			{#if !data.seen}
+			{#if !data.seen && data.kind === 'movie'}
 				<a
 					class="chip"
 					class:on={data.rent}
@@ -165,7 +164,13 @@
 				{/each}
 			</ul>
 		{:else}
-			<p class="muted">Nothing matches.</p>
+			<p class="muted">
+				{#if data.mine || data.rent || data.genre || data.on}
+					Nothing matches.
+				{:else}
+					No {data.kind === 'movie' ? 'films' : 'shows'} here yet.
+				{/if}
+			</p>
 		{/if}
 
 		{#if !data.hasServices && !data.seen}
