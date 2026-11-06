@@ -53,14 +53,15 @@ export function news(
 	const key = airedKey(t);
 	const fresh = latest?.airDate && latest.airDate >= addDays(today, -NEWS_DAYS);
 	if (latest && key !== row.latestAired && fresh) {
-		// Caught up: every episode. Part way through: nothing (no news of season 7
-		// mid season 4). Not started: only a new season, even if it all came out at
-		// once (latest 3x8 after 2x10).
+		// Caught up (nothing left to watch, or next up is after the latest out last
+		// check): every episode. Part way through: nothing (no news of season 7 mid
+		// season 4). Not started: only a new season, even if it all came out at once
+		// (latest 3x8 after 2x10).
 		const [seenSeason, seenEpisode] = (row.latestAired ?? '0x0').split('x').map(Number);
-		// Caught up: the next episode to watch is after the latest out last check.
-		const next = row.nextSeason ?? Infinity;
 		const caughtUp =
-			next > seenSeason || (next === seenSeason && (row.nextEpisode ?? 0) > seenEpisode);
+			row.nextSeason == null ||
+			row.nextSeason > seenSeason ||
+			(row.nextSeason === seenSeason && (row.nextEpisode ?? 0) > seenEpisode);
 		if (row.watchedAt) {
 			if (caughtUp)
 				notices.push({
