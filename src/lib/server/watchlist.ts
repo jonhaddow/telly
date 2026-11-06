@@ -1,7 +1,7 @@
 import { and, desc, eq } from 'drizzle-orm';
 import { service, watchlist, type WatchlistRow } from './db/schema.ts';
 import type { DB } from './db/index.ts';
-import { watchableOn, type Kind, type Provider, type Title } from '../titles.ts';
+import { listedCopy, type Kind, type Provider, type Title } from '../titles.ts';
 
 const key = (kind: Kind, id: number) => and(eq(watchlist.kind, kind), eq(watchlist.tmdbId, id));
 
@@ -22,10 +22,7 @@ export async function addToWatchlist(db: DB, t: Title, userId: number, now = new
 		.values({
 			kind: t.kind,
 			tmdbId: t.id,
-			name: t.name,
-			years: t.years,
-			poster: t.poster,
-			watchableOn: watchableOn(t.providers),
+			...listedCopy(t),
 			addedBy: userId,
 			addedAt: now.toISOString()
 		})
@@ -69,11 +66,7 @@ export async function removeFromWatchlist(db: DB, kind: Kind, id: number) {
 
 /** Keeps a listed title's copy of TMDB's details current. Returns its row, if listed. */
 export async function refreshListed(db: DB, t: Title) {
-	const [row] = await db
-		.update(watchlist)
-		.set({ name: t.name, years: t.years, poster: t.poster, watchableOn: watchableOn(t.providers) })
-		.where(key(t.kind, t.id))
-		.returning();
+	const [row] = await db.update(watchlist).set(listedCopy(t)).where(key(t.kind, t.id)).returning();
 	return row ?? null;
 }
 

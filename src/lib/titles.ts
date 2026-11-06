@@ -68,6 +68,15 @@ export type Providers = {
 /** Ids of the services showing it at no extra cost: subscription or free. */
 export const watchableOn = (p: Providers) => [...p.stream, ...p.free].map((s) => s.id);
 
+/** What a watchlist row copies from TMDB, so the list loads without it. */
+export const listedCopy = (t: Title) => ({
+	name: t.name,
+	years: t.years,
+	poster: t.poster,
+	watchableOn: watchableOn(t.providers),
+	toRent: t.providers.buy.length > 0
+});
+
 export type Ratings = {
 	imdb: number | null;
 	imdbVotes: number | null;

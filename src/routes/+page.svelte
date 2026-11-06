@@ -7,11 +7,13 @@
 	let { data }: PageProps = $props();
 
 	/** This page's address with a filter changed. */
-	function href(change: { seen?: boolean; kind?: string | null; mine?: boolean }) {
+	function href(change: { seen?: boolean; kind?: string | null; mine?: boolean; rent?: boolean }) {
 		const seen = change.seen ?? data.seen;
 		const kind = change.kind === undefined ? data.kind : change.kind;
-		const mine = !seen && (change.mine ?? data.mine);
-		const q = [seen && 'list=seen', kind && `kind=${kind}`, mine && 'mine=1']
+		// One of "On our services" and "To rent" at a time.
+		const mine = !seen && (change.mine ?? (change.rent ? false : data.mine));
+		const rent = !seen && !mine && (change.rent ?? data.rent);
+		const q = [seen && 'list=seen', kind && `kind=${kind}`, mine && 'mine=1', rent && 'rent=1']
 			.filter(Boolean)
 			.join('&');
 		return q ? `/?${q}` : '/';
@@ -89,14 +91,23 @@
 				>
 			{/each}
 		</nav>
-		{#if data.hasServices && !data.seen}
+		{#if !data.seen}
 			<div class="chips" data-sveltekit-reset="false">
+				{#if data.hasServices}
+					<a
+						class="chip"
+						class:on={data.mine}
+						href={href({ mine: !data.mine })}
+						aria-current={data.mine ? 'true' : undefined}
+						data-sveltekit-replacestate>On our services</a
+					>
+				{/if}
 				<a
 					class="chip"
-					class:on={data.mine}
-					href={href({ mine: !data.mine })}
-					aria-current={data.mine ? 'true' : undefined}
-					data-sveltekit-replacestate>On our services</a
+					class:on={data.rent}
+					href={href({ rent: !data.rent })}
+					aria-current={data.rent ? 'true' : undefined}
+					data-sveltekit-replacestate>To rent</a
 				>
 			</div>
 		{/if}

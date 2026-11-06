@@ -79,6 +79,8 @@ export const watchlist = sqliteTable(
 		poster: text('poster'),
 		/** Ids of the services showing it at no extra cost (JSON array). */
 		watchableOn: text('watchable_on', { mode: 'json' }).$type<number[]>().notNull(),
+		/** Somewhere rents or sells it (so it's out, not just in cinemas or coming). */
+		toRent: integer('to_rent', { mode: 'boolean' }).notNull().default(false),
 		addedBy: integer('added_by').references(() => user.id, { onDelete: 'set null' }),
 		addedAt: text('added_at').notNull(),
 		// Shows: the episode after the latest one watched (episodes.ts), copied so

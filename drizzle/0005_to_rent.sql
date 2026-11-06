@@ -1,0 +1,1 @@
+ALTER TABLE `watchlist` ADD `to_rent` integer DEFAULT false NOT NULL;

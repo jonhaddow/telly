@@ -35,6 +35,13 @@ test('pick services, add from search and a title page, filter, remove', async ({
 	await page.getByRole('link', { name: 'On our services' }).click();
 	await expect(grid.getByRole('link')).toHaveCount(1);
 	await expect(grid.getByRole('link', { name: /The Long Light.*on Netflix/ })).toBeVisible();
+	// To rent turns On our services off: one at a time.
+	await page.getByRole('link', { name: 'To rent' }).click();
+	await expect(page.getByRole('link', { name: 'To rent' })).toHaveAttribute('aria-current', 'true');
+	await expect(page.getByRole('link', { name: 'On our services' })).not.toHaveAttribute(
+		'aria-current'
+	);
+	await expect(grid.getByRole('link')).toHaveText([/The Long Light/]);
 
 	// Remove it again.
 	await grid.getByRole('link', { name: /The Long Light/ }).click();
