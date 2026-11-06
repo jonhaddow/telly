@@ -10,14 +10,14 @@
 
 	/** This page's address with filters changed (null clears one). */
 	function href(change: Record<string, string | null>) {
-		const q = new URLSearchParams(page.url.search);
-		for (const [k, v] of Object.entries(change)) {
-			if (v) q.set(k, v);
-			else q.delete(k);
-		}
+		const all = { ...Object.fromEntries(page.url.searchParams), ...change };
 		// Seen has no service or rent filters.
-		if (q.get('list')) for (const k of ['mine', 'rent']) q.delete(k);
-		return q.size ? `/?${q}` : '/';
+		if (all.list) all.mine = all.rent = null;
+		const q = Object.entries(all)
+			.filter((e): e is [string, string] => !!e[1])
+			.map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
+			.join('&');
+		return q ? `/?${q}` : '/';
 	}
 	const toggle = (name: string, on: boolean) => href({ [name]: on ? null : '1' });
 	const lists = [
