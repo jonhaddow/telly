@@ -10,7 +10,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const seen = url.searchParams.get('list') === 'seen';
 	const kind = KINDS.find((k) => k === url.searchParams.get('kind')) ?? null;
 	const mine = !seen && url.searchParams.get('mine') === '1';
-	const rent = !seen && !mine && url.searchParams.get('rent') === '1';
+	const rent = !seen && url.searchParams.get('rent') === '1';
 	const day = today();
 	const rows = all.filter((r) => isSeen(r, day) === seen);
 	if (seen)

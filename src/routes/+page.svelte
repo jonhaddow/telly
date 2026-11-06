@@ -10,9 +10,8 @@
 	function href(change: { seen?: boolean; kind?: string | null; mine?: boolean; rent?: boolean }) {
 		const seen = change.seen ?? data.seen;
 		const kind = change.kind === undefined ? data.kind : change.kind;
-		// One of "On our services" and "To rent" at a time.
-		const mine = !seen && (change.mine ?? (change.rent ? false : data.mine));
-		const rent = !seen && !mine && (change.rent ?? data.rent);
+		const mine = !seen && (change.mine ?? data.mine);
+		const rent = !seen && (change.rent ?? data.rent);
 		const q = [seen && 'list=seen', kind && `kind=${kind}`, mine && 'mine=1', rent && 'rent=1']
 			.filter(Boolean)
 			.join('&');

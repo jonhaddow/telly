@@ -74,7 +74,8 @@ export const listedCopy = (t: Title) => ({
 	years: t.years,
 	poster: t.poster,
 	watchableOn: watchableOn(t.providers),
-	toRent: t.providers.buy.length > 0
+	// Films only: shows on sale would crowd it.
+	toRent: t.kind === 'movie' && t.providers.buy.length > 0
 });
 
 export type Ratings = {
