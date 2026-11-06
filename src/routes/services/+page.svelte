@@ -18,6 +18,24 @@
 		those.
 	</p>
 
+	{#if data.most.length}
+		<section class="most" aria-labelledby="most">
+			<h2 id="most">Most of your watchlist</h2>
+			<ul class="list">
+				{#each data.most as s (s.id)}
+					<li>
+						<a href="/?on={s.id}">
+							{#if s.logo}<img src={imageUrl(s.logo, 'w92')} alt="" />{/if}
+							<span>{s.name}</span>
+							<span class="count">{s.count} {s.count === 1 ? 'title' : 'titles'}</span>
+						</a>
+					</li>
+				{/each}
+			</ul>
+		</section>
+		<h2>Pick yours</h2>
+	{/if}
+
 	<form method="POST">
 		<ul class="services">
 			{#each data.services as s (s.id)}
@@ -85,6 +103,26 @@
 	span {
 		min-width: 0;
 		overflow-wrap: anywhere;
+	}
+	.most {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+	.most a {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		padding: 8px 14px 8px 8px;
+		font-size: 14px;
+		font-weight: 700;
+		text-decoration: none;
+	}
+	.count {
+		margin-left: auto;
+		flex: none;
+		color: var(--muted);
+		font-weight: 400;
 	}
 	/* Over the tab bar, so it's always in reach. */
 	.save {
