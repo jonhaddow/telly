@@ -1,25 +1,20 @@
 # Telly
 
-What to watch next, and where: a film and TV tracker as a phone web app for a household, at https://telly.app.haddow.me. A shared watchlist; where to watch each title, your services first; IMDb, Rotten Tomatoes and Metacritic scores and the trailer. Shared episode tracking with an Up next queue, and push alerts for new episodes and titles arriving on your services. What's next: `docs/roadmap.md`.
+What to watch next, and where: a film and TV tracker, as a phone web app for a household.
 
-SvelteKit on Cloudflare Workers, with D1 (Drizzle). Film and TV data from [TMDB](https://www.themoviedb.org), scores from [OMDb](https://www.omdbapi.com). Sign-in is Google, for an allowlist in the `user` table.
+A shared watchlist shows where each title is streaming (your services first), its IMDb, Rotten Tomatoes and Metacritic scores and the trailer. Episode tracking builds an Up next queue, and push alerts flag new episodes and titles arriving on your services.
 
-## Develop
+## Tech stack
 
-```sh
-npm install
-cp .dev.vars.example .dev.vars
-npm run db:migrate:local
-npx wrangler d1 execute telly --local --command "INSERT INTO user (email, name) VALUES ('you@example.com', 'You')"
-npm run dev
-```
+- [SvelteKit](https://svelte.dev) (Svelte 5) and TypeScript, as an installable PWA
+- [Cloudflare Workers](https://workers.cloudflare.com), with [D1](https://developers.cloudflare.com/d1/) (SQLite) through [Drizzle ORM](https://orm.drizzle.team)
+- Google sign-in ([Arctic](https://arcticjs.dev)) for an allowlist of users
+- [Tailwind CSS](https://tailwindcss.com) and [shadcn-svelte](https://shadcn-svelte.com)
+- Film and TV data from [TMDB](https://www.themoviedb.org), scores from [OMDb](https://www.omdbapi.com)
+- Web push notifications from an hourly cron trigger
+- [Vitest](https://vitest.dev) and [Playwright](https://playwright.dev) for tests
+- Deployed from `main` by Cloudflare Workers Builds
 
-Without `TMDB_TOKEN` in `.dev.vars`, the app shows a few made-up titles (`src/lib/server/fake-apis.ts`). Sign in with the development-only button on the login page.
+## Development
 
-Tests: `npm test` (unit), `npm run test:e2e` (Playwright), `npm run check`, `npm run lint`.
-
-## Deploy
-
-Secrets: `GOOGLE_CLIENT_SECRET`, `TMDB_TOKEN` (TMDB's API Read Access Token), `OMDB_KEY`, `VAPID_PRIVATE_KEY` and `CRON_SECRET` (`wrangler secret put`). `CRON_SECRET` is any long random string: the hourly check sends it to `/check`.
-
-Pushing to `main` deploys through Cloudflare Workers Builds, whose deploy command `npm run deploy:ci` applies D1 migrations first. Back up the data with `npx wrangler d1 export telly --remote --output telly.sql`.
+See [`docs/development.md`](docs/development.md) for running it locally, configuration and deploying.
