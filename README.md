@@ -15,6 +15,16 @@ A shared watchlist shows where each title is streaming (your services first), it
 - [Vitest](https://vitest.dev) and [Playwright](https://playwright.dev) for tests
 - Deployed from `main` by Cloudflare Workers Builds
 
-## Development
+## Running locally
 
-See [`docs/development.md`](docs/development.md) for running it locally, configuration and deploying.
+```sh
+npm install
+cp .dev.vars.example .dev.vars
+npm run db:migrate:local
+npx wrangler d1 execute telly --local --command "INSERT INTO user (email, name) VALUES ('you@example.com', 'You')"
+npm run dev    # the login page has a dev-only sign-in button
+```
+
+Without `TMDB_TOKEN` in `.dev.vars`, it shows a few made-up titles.
+
+Tests: `npm test` (unit), `npm run test:e2e` (Playwright), `npm run check` (types), `npm run lint`.
