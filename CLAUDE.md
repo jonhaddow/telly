@@ -10,6 +10,7 @@ A film and TV tracker for a household that watches together: one shared watchlis
 - Alerts: an hourly cron, 07–21 UTC (`worker/entry.js` → `/check` → `alerts.ts`), checks each watchlist title once a day, 12 a run (longest ago first), so it stays inside the free plan's CPU and 50 outbound requests. A title's first check only takes note.
 - Local dev and e2e use made-up titles (`fake-apis.ts`) unless `.dev.vars` has `TMDB_TOKEN`; e2e and `shot.sh` always do (`FAKE_APIS=1`). Add to the fakes when a test needs a new field.
 - TMDB's terms: keep the credit on the settings page. Where-to-watch data is JustWatch's, via TMDB, and needs its credit too.
+- Secrets: `GOOGLE_CLIENT_SECRET`, `TMDB_TOKEN` (TMDB's API Read Access Token), `OMDB_KEY`, `VAPID_PRIVATE_KEY`, `CRON_SECRET` (the hourly check sends it to `/check`). Without `TMDB_TOKEN` locally, the app shows made-up titles (`src/lib/server/fake-apis.ts`).
 
 ## Review focus
 
