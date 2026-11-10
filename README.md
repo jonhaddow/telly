@@ -8,7 +8,7 @@ A shared watchlist shows where each title is streaming (your services first), it
 
 - [SvelteKit](https://svelte.dev) (Svelte 5) and TypeScript, as an installable PWA
 - [Cloudflare Workers](https://workers.cloudflare.com), with [D1](https://developers.cloudflare.com/d1/) (SQLite) through [Drizzle ORM](https://orm.drizzle.team)
-- Google sign-in ([Arctic](https://arcticjs.dev)) for an allowlist of users
+- Google sign-in (OAuth with PKCE, shared code in [`auth`](https://github.com/jonhaddow/auth)) for an allowlist of users
 - [Tailwind CSS](https://tailwindcss.com) and [shadcn-svelte](https://shadcn-svelte.com)
 - Film and TV data from [TMDB](https://www.themoviedb.org), scores from [OMDb](https://www.omdbapi.com)
 - Web push notifications from an hourly cron trigger
