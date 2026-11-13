@@ -15,3 +15,5 @@ A film and TV tracker for a household that watches together: one shared watchlis
 ## Review focus
 
 TMDB fields that can be missing or empty, and Workers CPU when parsing big TMDB responses.
+
+- Pages scroll in the layout's `.scroll`, not the window, with the tab bar over it (so iOS can't strand it mid-screen). SvelteKit's scroll handling doesn't apply: the layout keeps scroll positions itself, and tapping the iPhone status bar no longer jumps to the top (tapping the open tab does).

@@ -1,6 +1,12 @@
 <script lang="ts">
 	import type { LayoutProps } from './$types';
-	import { beforeNavigate, invalidateAll, onNavigate } from '$app/navigation';
+	import {
+		afterNavigate,
+		beforeNavigate,
+		invalidateAll,
+		onNavigate,
+		snapshot
+	} from '$app/navigation';
 	import { page, updated } from '$app/state';
 	// Served with the app (not Google Fonts): no extra connections before text shows.
 	import '@fontsource-variable/instrument-sans';
@@ -9,6 +15,23 @@
 	import './app.css';
 
 	let { data, children }: LayoutProps = $props();
+
+	// The pages scroll in here, not the window, so SvelteKit's own scroll handling
+	// doesn't reach them: back and forward return to where the page was left, and
+	// going somewhere new (or tapping a tab again) starts at the top. It also takes
+	// the focus SvelteKit gives the body, so the keys (Space, arrows) scroll it.
+	let scroller = $state<HTMLElement>();
+	snapshot({
+		id: 'scroll',
+		capture: () => scroller?.scrollTop ?? 0,
+		restore: (top: number) => scroller?.scrollTo(0, top)
+	});
+	afterNavigate(({ type, from, to }) => {
+		if (type === 'link' || (type === 'goto' && from?.url.href !== to?.url.href)) {
+			scroller?.scrollTo(0, 0);
+		}
+		if (document.activeElement === document.body) scroller?.focus({ preventScroll: true });
+	});
 
 	const path = $derived(page.url.pathname);
 	const tabs = $derived([
@@ -55,7 +78,9 @@
 
 <svelte:document onvisibilitychange={onVisible} />
 
-{@render children()}
+<div class="scroll" tabindex="-1" bind:this={scroller}>
+	{@render children()}
+</div>
 
 {#if data.user}
 	<!-- Each tab's code loads straight away, so the first tap only waits for data. -->
@@ -92,11 +117,18 @@
 {/if}
 
 <style>
+	.scroll {
+		flex: 1;
+		min-height: 0;
+		overflow-y: auto;
+		outline: none;
+	}
+
 	/* Flush along the bottom, frosted; the page scrolls under it. The tab you're
 	   on is lit in the accent, with a bar along its top edge. */
 	nav {
 		view-transition-name: tabs;
-		position: fixed;
+		position: absolute;
 		inset: auto 0 0;
 		height: calc(var(--tabs) + env(safe-area-inset-bottom));
 		padding-bottom: env(safe-area-inset-bottom);

@@ -57,8 +57,21 @@
 		box-sizing: border-box;
 	}
 
+	/* The app fills the screen and never scrolls itself: pages scroll in the
+	   layout's .scroll, with the tabs over it. A bar fixed over a scrolling page
+	   drifts up the screen in iOS home-screen apps once the keyboard or a sheet
+	   leaves the viewport mis-sized. */
+	html,
+	body {
+		height: 100%;
+		overflow: hidden;
+	}
+
 	body {
 		margin: 0;
+		position: relative;
+		display: flex;
+		flex-direction: column;
 		background: var(--bg);
 		color: var(--ink);
 		font-family: 'Instrument Sans Variable', system-ui, sans-serif;
