@@ -27,7 +27,7 @@
 		restore: (top: number) => scroller?.scrollTo(0, top)
 	});
 	afterNavigate(({ type, from, to }) => {
-		if (type === 'link' || (type === 'goto' && from?.url.href !== to?.url.href)) {
+		if (type === 'link' || (type === 'goto' && from?.url.pathname !== to?.url.pathname)) {
 			scroller?.scrollTo(0, 0);
 		}
 		if (document.activeElement === document.body) scroller?.focus({ preventScroll: true });
@@ -118,6 +118,7 @@
 
 <style>
 	.scroll {
+		position: relative;
 		flex: 1;
 		min-height: 0;
 		overflow-y: auto;
