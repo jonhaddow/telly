@@ -63,8 +63,10 @@
 				<a
 					href={href({ kind: k.kind })}
 					aria-current={data.kind === k.kind ? 'page' : undefined}
-					data-sveltekit-replacestate>{k.label}</a
+					data-sveltekit-replacestate
 				>
+					{k.label}
+				</a>
 			{/each}
 		</nav>
 		{#if data.upNext.length}
@@ -98,8 +100,10 @@
 					class="chip on"
 					href={href({ on: null })}
 					aria-label="On {data.on.name}: show all"
-					data-sveltekit-replacestate>On {data.on.name} ✕</a
+					data-sveltekit-replacestate
 				>
+					On {data.on.name} ✕
+				</a>
 			{/if}
 			{#if data.hasServices && !data.seen}
 				<a
@@ -107,8 +111,10 @@
 					class:on={data.mine}
 					href={toggle('mine', data.mine)}
 					aria-current={data.mine ? 'true' : undefined}
-					data-sveltekit-replacestate>On our services</a
+					data-sveltekit-replacestate
 				>
+					On our services
+				</a>
 			{/if}
 			{#if !data.seen && data.kind === 'movie'}
 				<a
@@ -116,8 +122,10 @@
 					class:on={data.rent}
 					href={toggle('rent', data.rent)}
 					aria-current={data.rent ? 'true' : undefined}
-					data-sveltekit-replacestate>To rent</a
+					data-sveltekit-replacestate
 				>
+					To rent
+				</a>
 			{/if}
 			{#if data.genres.length}
 				<label class="chip genre" class:on={data.genre}>
@@ -157,8 +165,9 @@
 								{/if}
 							</span>
 							<span class="name">{t.name}</span>
-							{#if t.on.length}<span class="sr">, on {t.on.map((s) => s.name).join(', ')}</span
-								>{/if}
+							{#if t.on.length}<span class="sr">
+									, on {t.on.map((s) => s.name).join(', ')}
+								</span>{/if}
 						</a>
 					</li>
 				{/each}
